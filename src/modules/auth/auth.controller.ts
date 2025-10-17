@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { UserService } from '../user/user.services';
 import bcrypt from "bcryptjs"
 import asyncHandler from 'express-async-handler'
+import {StatusCode} from '../../Shared/enums/statusCode.enum'
+import sendResponse from '../../utils/sendResponse'
 
 export class AuthController {
 
@@ -12,8 +14,10 @@ export class AuthController {
         // 1️⃣ تأكد إن المستخدم مش موجود بالفعل
         const existingUser = await UserService.findUser(email);
         if (existingUser) {
-            res.status(400);
-            throw new Error('User already exists')
+            sendResponse(res, StatusCode.BAD_REQUEST, {
+                success: false,
+                message: 'User already exists'
+            });
         }
         const salt = await bcrypt.genSalt(10)
 
@@ -24,12 +28,13 @@ export class AuthController {
         let newUser= await userService.createUser()
 
         // 4️⃣ رجّع استجابة ناجحة
-        res.status(201).json({
+        sendResponse(res, StatusCode.CREATED, {
+            success: true,
             message: 'User registered successfully',
-            user: {
-            id: newUser._id,
-            username: newUser.username,
-            email: newUser.email
+            data: {
+                id: newUser._id,
+                username: newUser.username,
+                email: newUser.email
             }
         });
     });

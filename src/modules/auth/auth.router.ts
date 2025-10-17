@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { AuthController } from './auth.controller';
-import {AuthValidation} from '../DTO/register.dto'
+import {AuthValidation} from '../dto/register.dto'
 import {Validator} from '../../Shared/validation/register.validated'
 
 

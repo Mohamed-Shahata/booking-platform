@@ -3,9 +3,9 @@ import { StatusCode } from "../Shared/enums/statusCode.enum";
 
 interface ResponsePayload {
   success: boolean;
-  message: string | null;
-  data: any;
-  errors: any;
+  message?: string | null;
+  data?: any;
+  errors?: any;
   [key: string]: any;
 }
 

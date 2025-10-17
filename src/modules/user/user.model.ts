@@ -1,6 +1,6 @@
 import mongoose ,{Document, Schema ,  model} from "mongoose";
 import {UserGender} from './user.enum'
-import {UserRole } from '../../Shared/enums/role.enum'
+import {UserRoles } from '../../Shared/enums/UserRoles.enum'
 
 export interface IUser extends Document {
     username: string;
@@ -79,8 +79,8 @@ const userSchema = new Schema<IUser>({
     },
     role: {
         type: String,
-        enum:UserRole,
-        default: UserRole.USER
+        enum:UserRoles,
+        default: UserRoles.CLIENT
     }
     }, {
     timestamps: true }
