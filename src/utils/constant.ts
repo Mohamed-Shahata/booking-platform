@@ -4,6 +4,7 @@ export const AuthErrors = {
   INVALID_TOKEN: "Invalid token",
   EXPIRED_TOKEN: "Expired token",
   ACCESS_DENIED: "Access denied",
+  VALIDTION_ERROR:"Validation failed"
 };
 
 export const ServerErrors = {

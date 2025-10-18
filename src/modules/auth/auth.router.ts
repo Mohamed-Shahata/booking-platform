@@ -1,10 +1,7 @@
 import {Router} from 'express';
 import { AuthController } from './auth.controller';
 import {AuthValidation} from '../dto/register.dto'
-import {Validator} from '../../Shared/validation/register.validated'
-
-
-const validation = new Validator(AuthValidation.registerSchema);
+import {validate} from '../../Shared/validation/validate'
 
 
 export class AuthRoutes {
@@ -16,7 +13,7 @@ export class AuthRoutes {
     }
 
     private initRoutes(){
-        this.route.post('/register',validation.validate,this.controller.register)
+        this.route.post('/register',validate(AuthValidation.registerSchema),this.controller.register)
     }
 }
 
