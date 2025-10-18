@@ -1,91 +1,86 @@
-import mongoose ,{Document, Schema ,  model} from "mongoose";
-import {UserGender} from './user.enum'
-import {UserRoles } from '../../Shared/enums/UserRoles.enum'
+import { Document, Schema, model } from "mongoose";
+import { UserGender } from "./user.enum";
+import { UserRoles } from "../../shared/enums/UserRoles.enum";
 
 export interface IUser extends Document {
-    username: string;
-    email: string;
-    password: string;
-    gender: string;
-    image?: string ;
-    phone?: string | null;
-    address?: string | null;
-    isVerify: boolean;
-    verificationCode: number | null;
-    verificationCodeExpires: Date | null;
-    resetPasswordToken: string | null;
-    resetPasswordExpire: Date |null;
-    role: string;
+  username: string;
+  email: string;
+  password: string;
+  gender: string;
+  image?: string;
+  phone?: string | null;
+  address?: string | null;
+  isVerify: boolean;
+  verificationCode: number | null;
+  verificationCodeExpires: Date | null;
+  resetPasswordToken: string | null;
+  resetPasswordExpire: Date | null;
+  role: string;
 }
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema<IUser>(
+  {
     username: {
-        type: String,
-        required: [true, 'Username required'],
-        minlength: [6, 'Name too short'],
-        maxlength: [15, 'Name too long'],
-        validate: {
-            validator: function (v: string) {
-                return /^[A-Za-z][A-Za-z0-9]*$/.test(v);
-            },
-            message: 'Username must start with a letter and contain only letters and numbers'
-        }
+      type: String,
+      required: true,
     },
     email: {
-        type: String,
-        required: [true, 'Email required'],
-        unique: [true, 'Email already exists'],
+      type: String,
+      required: true,
+      unique: true,
     },
     password: {
-        type: String,
-        required: [true,'password require']
+      type: String,
+      minLength: 8,
+      required: true,
     },
     gender: {
-        type: String,
-        enum: UserGender,
-        default:UserGender.OTHER
+      type: String,
+      enum: UserGender,
+      default: UserGender.OTHER,
     },
     image: {
-        type: String,
-        default: 'uploads/defaultProfile.png'
+      type: String,
+      default: "uploads/defaultProfile.png",
     },
     phone: {
-        type: String ,
-        default: null
+      type: String,
+      default: null,
     },
     address: {
-        type: String,
-        default: null
+      type: String,
+      default: null,
     },
     isVerify: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false,
     },
     verificationCode: {
-        type: Number,
-        default:null
+      type: Number,
+      default: null,
     },
     verificationCodeExpires: {
-        type: Date,
-        default:null
+      type: Date,
+      default: null,
     },
     resetPasswordToken: {
-        type: String,
-        default:null
+      type: String,
+      default: null,
     },
     resetPasswordExpire: {
-        default:null,
-        type: Date
+      default: null,
+      type: Date,
     },
     role: {
-        type: String,
-        enum:UserRoles,
-        default: UserRoles.CLIENT
-    }
-    }, {
-    timestamps: true }
+      type: String,
+      enum: UserRoles,
+      default: UserRoles.CLIENT,
+    },
+  },
+  {
+    timestamps: true,
+  }
 );
 
-
-export const UserModel= model<IUser>('User',userSchema)
-
+const User = model<IUser>("User", userSchema);
+export default User;

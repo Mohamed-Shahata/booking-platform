@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import AppError from "../errors/app.error";
 import { AuthErrors } from "../../utils/constant";
-import { StatusCode } from "../enums/statusCode.enum"
+import { StatusCode } from "../enums/statusCode.enum";
 import { Types } from "mongoose";
 import { UserRoles } from "../enums/UserRoles.enum";
+import AppError from "../errors/app.error";
 
 export interface CustomJwtPayload {
   id: Types.ObjectId;

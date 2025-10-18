@@ -1,41 +1,22 @@
-import { Request, Response } from 'express';
-import { UserService } from '../user/user.services';
-import bcrypt from "bcryptjs"
-import asyncHandler from 'express-async-handler'
-import {StatusCode} from '../../Shared/enums/statusCode.enum'
-import sendResponse from '../../utils/sendResponse'
+import { Request, Response } from "express";
+import sendResponse from "../../utils/sendResponse";
+import { StatusCode } from "../../shared/enums/statusCode.enum";
+import AuthService from "./auth.service";
 
-export class AuthController {
+class AuthController {
+  private authService: AuthService;
 
-    public register = asyncHandler(async (req: Request, res: Response)=>{
-        
-        const { username, email, password, gender, phone, address ,role } = req.body;
+  constructor() {
+    this.authService = new AuthService();
+  }
 
-        // 1️⃣ تأكد إن المستخدم مش موجود بالفعل
-        const existingUser = await UserService.findUser(email);
-        if (existingUser) {
-            sendResponse(res, StatusCode.BAD_REQUEST, {
-                success: false,
-                message: 'User already exists'
-            });
-        }
-        const salt = await bcrypt.genSalt(10)
+  public register = async (req: Request, res: Response) => {
+    const dto = req.body;
 
-        const hashedPassword= await bcrypt.hash(password,salt)
+    const { message } = await this.authService.register(dto);
 
-        // 2️⃣ إنشاء كائن من Userservice
-        let userService=new UserService({username,email,password:hashedPassword,gender,phone,address,role})
-        let newUser= await userService.createUser()
-
-        // 4️⃣ رجّع استجابة ناجحة
-        sendResponse(res, StatusCode.CREATED, {
-            success: true,
-            message: 'User registered successfully',
-            data: {
-                id: newUser._id,
-                username: newUser.username,
-                email: newUser.email
-            }
-        });
-    });
+    sendResponse(res, StatusCode.OK, { success: true, data: { message } });
+  };
 }
+
+export default AuthController;

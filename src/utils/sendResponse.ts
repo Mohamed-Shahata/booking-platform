@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { StatusCode } from "../Shared/enums/statusCode.enum";
+import { StatusCode } from "../shared/enums/statusCode.enum";
 
 interface ResponsePayload {
   success: boolean;
