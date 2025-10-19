@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../errors/app.error";
-import sendResponse from "../../utils/sendResponse";
-import { ServerErrors } from "../../utils/constant";
+import sendResponse from "../utils/sendResponse";
+import { ServerErrors } from "../utils/constant";
 
 /**
  * Global Error Handling Middleware:

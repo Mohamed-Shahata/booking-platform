@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { AuthErrors, UserError } from "../../utils/constant";
+import { AuthErrors, UserError } from "../utils/constant";
 import { StatusCode } from "../enums/statusCode.enum";
 import { Types } from "mongoose";
 import { UserRoles } from "../enums/UserRoles.enum";

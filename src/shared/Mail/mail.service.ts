@@ -1,7 +1,7 @@
 import { createTransport } from "nodemailer";
 import { getVreficationTemplate } from "./mail.templates";
 import { config } from "dotenv";
-import { Environment, SubjectMail } from "../../utils/constant";
+import { Environment, SubjectMail } from "../utils/constant";
 config();
 
 class MailService {

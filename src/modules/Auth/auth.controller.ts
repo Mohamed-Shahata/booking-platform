@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import sendResponse from "../../utils/sendResponse";
+import sendResponse from "../../shared/utils/sendResponse";
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AuthService from "./auth.service";
 

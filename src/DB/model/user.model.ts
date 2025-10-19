@@ -1,8 +1,8 @@
 import { Schema, model } from "mongoose";
-import { UserGender } from "./user.enum";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
-import { IUser } from "./user.type";
 import bcrypt from "bcryptjs";
+import { IUser } from "../../modules/User/user.type";
+import { UserGender } from "../../modules/User/user.enum";
 
 const userSchema = new Schema<IUser>(
   {

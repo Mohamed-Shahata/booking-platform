@@ -1,9 +1,9 @@
+import User from "../../DB/model/user.model";
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AppError from "../../shared/errors/app.error";
-import { UserError, ValidationError } from "../../utils/constant";
-import { generateAccessToken } from "../../utils/generateTokens";
-import mailService from "../Mail/mail.service";
-import User from "../User/user.model";
+import { UserError, ValidationError } from "../../shared/utils/constant";
+import { generateAccessToken } from "../../shared/utils/generateTokens";
+import mailService from "../../shared/Mail/mail.service";
 import { IUser } from "../User/user.type";
 import { LoginDto } from "./dto/login.dto";
 import { VerifyEmailDto } from "./dto/register.dto";
