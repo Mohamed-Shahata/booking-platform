@@ -1,27 +1,15 @@
-import { Document, Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { UserGender } from "./user.enum";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
-
-export interface IUser extends Document {
-  username: string;
-  email: string;
-  password: string;
-  gender: string;
-  image?: string;
-  phone?: string | null;
-  address?: string | null;
-  isVerify: boolean;
-  verificationCode: number | null;
-  verificationCodeExpires: Date | null;
-  resetPasswordToken: string | null;
-  resetPasswordExpire: Date | null;
-  role: string;
-}
+import { IUser } from "./user.type";
+import bcrypt from "bcryptjs";
 
 const userSchema = new Schema<IUser>(
   {
     username: {
       type: String,
+      minLength: 2,
+      maxLength: 15,
       required: true,
     },
     email: {
@@ -41,7 +29,8 @@ const userSchema = new Schema<IUser>(
     },
     image: {
       type: String,
-      default: "uploads/defaultProfile.png",
+      default:
+        "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small_2x/default-avatar-icon-of-social-media-user-vector.jpg",
     },
     phone: {
       type: String,
@@ -51,12 +40,12 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: null,
     },
-    isVerify: {
+    isVerified: {
       type: Boolean,
       default: false,
     },
     verificationCode: {
-      type: Number,
+      type: String,
       default: null,
     },
     verificationCodeExpires: {
@@ -81,6 +70,16 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+
+// Hashing the password before saving in database
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  const salt = await bcrypt.genSalt(+process.env.SALT!);
+  this.password = await bcrypt.hash(this.password, salt);
+
+  next();
+});
 
 const User = model<IUser>("User", userSchema);
 export default User;

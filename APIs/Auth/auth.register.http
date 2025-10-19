@@ -1,0 +1,10 @@
+### Register API
+POST http://localhost:3000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username":"Ahmed",
+  "email":"ahmed@gmail.com",
+  "password":"123456789",
+  "gender":"male"
+}

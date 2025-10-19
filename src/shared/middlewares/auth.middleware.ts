@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { AuthErrors } from "../../utils/constant";
+import { AuthErrors, UserError } from "../../utils/constant";
 import { StatusCode } from "../enums/statusCode.enum";
 import { Types } from "mongoose";
 import { UserRoles } from "../enums/UserRoles.enum";
 import AppError from "../errors/app.error";
+import User from "../../modules/User/user.model";
 
 export interface CustomJwtPayload {
   id: Types.ObjectId;
@@ -38,7 +39,9 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       process.env.JWT_SECRET!
     ) as CustomJwtPayload;
 
-    // note: don't forget check user exsits in database
+    const user = await User.findById(decoded.id);
+    if (!user)
+      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
 
     req.user = decoded;
     next();

@@ -13,7 +13,7 @@ app.use(e.json());
 app.use(cookieParser());
 
 // Routes
-app.use("/v1/api/", authRoutes.router);
+app.use("/api/v1/auth", authRoutes.router);
 
 // Error Handler
 app.use(errorHandler);
