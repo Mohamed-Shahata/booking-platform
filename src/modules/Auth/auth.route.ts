@@ -1,9 +1,9 @@
 import { Router } from "express";
 import expressAsyncHandler from "express-async-handler";
 import AuthController from "./auth.controller";
-import { registerSchema } from "./dto/register.dto";
 import validate from "../../shared/middlewares/validation.middleware";
-import { verifyEmailSchema } from "./dto/verifyEmail.dto";
+import { registerSchema } from "./dto/verifyEmail.dto";
+import { verifyEmailSchema } from "./dto/register.dto";
 
 class AuthRouter {
   router = Router();

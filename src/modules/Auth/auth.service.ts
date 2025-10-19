@@ -4,8 +4,8 @@ import { UserError, ValidationError } from "../../utils/constant";
 import mailService from "../Mail/mail.service";
 import User from "../User/user.model";
 import { IUser } from "../User/user.type";
-import { RegisterDto } from "./dto/register.dto";
-import { VerifyEmailDto } from "./dto/verifyEmail.dto";
+import { VerifyEmailDto } from "./dto/register.dto";
+import { RegisterDto } from "./dto/verifyEmail.dto";
 
 class AuthService {
   /**
