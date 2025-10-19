@@ -16,12 +16,15 @@ export const UserError = {
   USER_ACCOUNT_IS_VERIFIED: "User acount is verified",
   USER_NOT_FOUND: "User not found",
   USER_ALREADY_EXSITS: "User already exsits",
+  USER_ACCOUNT_IS_NOT_VERIFIED: "User account isn't verified",
 };
 
 export const ValidationError = {
   CODE_EXPIRED: "Code expired",
   VALIDATION_ERROR: "VALIDATION_ERROR",
   CODE_IS_WRONG: "Code is wrong",
+  PASSWORD_DO_NOT_MATCH: "Passwords don't match",
+  EMAIL_OR_PASSWORD_IS_WRONG: "Email or password is wrong",
 };
 
 export const SubjectMail = {

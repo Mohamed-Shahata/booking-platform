@@ -21,6 +21,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       minLength: 8,
       required: true,
+      select: false,
     },
     gender: {
       type: String,
@@ -80,6 +81,13 @@ userSchema.pre("save", async function (next) {
 
   next();
 });
+
+// compare the password is match or no
+userSchema.methods.comparePassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 const User = model<IUser>("User", userSchema);
 export default User;

@@ -43,6 +43,26 @@ class AuthController {
     const { message } = await this.authService.verifyEmail(dto);
     sendResponse(res, StatusCode.OK, { data: { message }, success: true });
   };
+
+  /**
+   * dto is => Validation data is {email , password}
+   * POST ~/auth/login
+   *
+   * example
+   * {
+   *  email: "ex_email@gmail.com",
+   *  password: "12345678" => min length must be 8 digits
+   * }
+   */
+  public login = async (req: Request, res: Response) => {
+    const dto = req.body;
+    const { user, accessToken } = await this.authService.login(dto);
+
+    sendResponse(res, StatusCode.OK, {
+      data: { user, accessToken },
+      success: true,
+    });
+  };
 }
 
 export default AuthController;

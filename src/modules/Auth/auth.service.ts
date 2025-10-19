@@ -1,9 +1,11 @@
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AppError from "../../shared/errors/app.error";
 import { UserError, ValidationError } from "../../utils/constant";
+import { generateAccessToken } from "../../utils/generateTokens";
 import mailService from "../Mail/mail.service";
 import User from "../User/user.model";
 import { IUser } from "../User/user.type";
+import { LoginDto } from "./dto/login.dto";
 import { VerifyEmailDto } from "./dto/register.dto";
 import { RegisterDto } from "./dto/verifyEmail.dto";
 
@@ -71,7 +73,7 @@ class AuthService {
       throw new AppError(ValidationError.CODE_EXPIRED, StatusCode.BAD_REQUEST);
 
     if (user.verificationCode !== code)
-      throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_GATEWAY);
+      throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
 
     user.isVerified = true;
     user.verificationCode = null;
@@ -83,16 +85,66 @@ class AuthService {
   };
 
   /**
-   * Finds a user by email.
-   * Throws an error if the user does not exist.
+   * Authenticates a user by validating email and password.
+   * If successful, returns the user data along with an access token.
    *
-   * @param email - The user's email
-   * @returns The found user document
+   * @param dto - Login credentials (email and password)
+   * @returns Authenticated user and generated access token
    */
-  private findUserByEmail = async (email: string): Promise<IUser> => {
-    const user = await User.findOne({ email });
+  public login = async (
+    dto: LoginDto
+  ): Promise<{ user: IUser; accessToken: string }> => {
+    const { email, password } = dto;
+
+    const user = await this.findUserByEmail(
+      email,
+      ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+      true
+    );
+
+    if (!user.isVerified)
+      throw new AppError(
+        UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
+        StatusCode.BAD_REQUEST
+      );
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch)
+      throw new AppError(
+        ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+        StatusCode.BAD_REQUEST
+      );
+
+    // generate a new access token
+    const accessToken = generateAccessToken({ id: user._id, role: user.role });
+
+    return { user, accessToken };
+  };
+
+  /**
+   * Finds a user by email with optional validation message and password selection.
+   *
+   * @param email - The email address of the user to search for
+   * @param messageValidation - (Optional) Custom error message if user is not found
+   * @param selectPassword - (Optional) Whether to include the user's password field in the result
+   *
+   * @returns The user document if found
+   * @throws AppError if the user does not exist
+   */
+  private findUserByEmail = async (
+    email: string,
+    messageValidation?: string,
+    selectPassword: boolean = false
+  ): Promise<IUser> => {
+    const selectPass = "+password";
+    const notSelectPass = "-password";
+    const user = await User.findOne({ email }).select(
+      selectPassword ? selectPass : notSelectPass
+    );
     if (!user)
-      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.BAD_GATEWAY);
+      throw new AppError(
+        messageValidation || UserError.USER_NOT_FOUND,
+        StatusCode.BAD_REQUEST
+      );
     return user;
   };
 

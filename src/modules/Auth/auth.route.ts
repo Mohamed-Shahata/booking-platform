@@ -4,6 +4,7 @@ import AuthController from "./auth.controller";
 import validate from "../../shared/middlewares/validation.middleware";
 import { registerSchema } from "./dto/verifyEmail.dto";
 import { verifyEmailSchema } from "./dto/register.dto";
+import { loginSchema } from "./dto/login.dto";
 
 class AuthRouter {
   router = Router();
@@ -27,6 +28,13 @@ class AuthRouter {
       "/verify",
       validate(verifyEmailSchema),
       expressAsyncHandler(this.authController.verifyEmail)
+    );
+
+    // POST ~/auth/login
+    this.router.post(
+      "/login",
+      validate(loginSchema),
+      expressAsyncHandler(this.authController.login)
     );
   };
 }

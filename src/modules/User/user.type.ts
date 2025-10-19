@@ -1,6 +1,7 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   username: string;
   email: string;
   password: string;
@@ -14,4 +15,5 @@ export interface IUser extends Document {
   resetPasswordToken: string | null;
   resetPasswordExpire: Date | null;
   role: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
