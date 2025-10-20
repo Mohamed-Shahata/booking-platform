@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthErrors, UserError } from "../utils/constant";
 import { StatusCode } from "../enums/statusCode.enum";
 import { Types } from "mongoose";
 import { UserRoles } from "../enums/UserRoles.enum";
 import AppError from "../errors/app.error";
-import User from "../../modules/User/user.model";
+import User from "../../DB/model/user.model";
 
-export interface CustomJwtPayload {
+
+export interface CustomJwtPayload extends JwtPayload{
   id: Types.ObjectId;
   role: string | UserRoles;
 }
@@ -42,6 +43,10 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.findById(decoded.id);
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+
+  if (user.chanageCridentialsTime!?.getTime() >= decoded.iat!* 1000) {
+ throw new AppError(AuthErrors.IN_VAILAD_CRIDENTIALSTIME,StatusCode.UNAUTHORIZED)
+  }
 
     req.user = decoded;
     next();

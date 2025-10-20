@@ -5,6 +5,7 @@ export const AuthErrors = {
   EXPIRED_TOKEN: "Expired token",
   ACCESS_DENIED: "Access denied",
   VALIDTION_ERROR: "Validation failed",
+  IN_VAILAD_CRIDENTIALSTIME:"In-vaild CridentialsTime"
 };
 
 export const Environment = {
