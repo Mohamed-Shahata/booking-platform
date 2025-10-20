@@ -32,6 +32,10 @@ class MailService {
     const html = getVreficationTemplate(name, code);
     return this.sendMail(to, SubjectMail.VERIFICATION_EMAIL, html);
   };
+    public sendRestPassword = (to: string, name: string, code: string) => {
+    const html = getVreficationTemplate(name, code);
+    return this.sendMail(to, SubjectMail.REST_PASSWORD, html);
+  };
 }
 
 const mailService = new MailService();
