@@ -63,6 +63,45 @@ class AuthController {
       success: true,
     });
   };
+    /**
+   * dto is => Validation data is {email ,code, password}
+   * POST ~/auth/restPassword
+   *
+   * example
+   * {
+   *  email: "ex_email@gmail.com",
+   *  password: "12345678" => min length must be 8 digits
+   * code:"123456"=> min length must be 6 digits
+   * }
+   */
+ public restPassword = async (req: Request, res: Response) => {
+    const dto = req.body;
+    const { message } = await this.authService.restPassword(dto);
+
+    sendResponse(res, StatusCode.OK, {
+      data: { message },
+      success: true,
+    });
+  };
+
+      /**
+   * dto is => Validation data is {email}
+   * POST ~/auth/forgetPassword
+   *
+   * example
+   * {
+   *  email: "ex_email@gmail.com",
+   * }
+   */
+   public forgetPassword = async (req: Request, res: Response) => {
+    const dto = req.body;
+    const { message } = await this.authService.forgetPassword(dto);
+    sendResponse(res, StatusCode.OK, {
+      data: { message },
+      success: true,
+    });
+  };
 }
+
 
 export default AuthController;

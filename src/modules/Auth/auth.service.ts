@@ -8,6 +8,8 @@ import { IUser } from "../User/user.type";
 import { LoginDto } from "./dto/login.dto";
 import { VerifyEmailDto } from "./dto/register.dto";
 import { RegisterDto } from "./dto/verifyEmail.dto";
+import { restPasswordDto } from "./dto/restPassword.dto";
+import { forgetPasswordDto } from "./dto/forgetPassword.dto";
 
 class AuthService {
   /**
@@ -165,6 +167,59 @@ class AuthService {
    */
   private generateOtp = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  public forgetPassword = async (
+    dto: forgetPasswordDto
+  ): Promise<{ message: string }> => {
+    const { email } = dto;
+    const user = await this.findUserByEmail(
+      email,
+      ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+      true
+    );
+    if (!user.isVerified)
+      throw new AppError(
+        UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
+        StatusCode.BAD_REQUEST
+      );
+    const otp = this.generateOtp();
+    await mailService.sendRestPassword(email, user.username, otp);
+    await user.updateOne({
+      verificationCode: otp,
+      verificationCodeExpires: this.generateExpiryTime(5),
+    });
+    return { message: "Done" };
+  };
+  public restPassword = async (
+    dto: restPasswordDto
+  ): Promise<{ message: string }> => {
+    const { email, code, password } = dto;
+    const user = await this.findUserByEmail(
+      email,
+      ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+      true
+    );
+    if (!user.isVerified)
+      throw new AppError(
+        UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
+        StatusCode.BAD_REQUEST
+      );
+    if (
+      user.verificationCodeExpires &&
+      user.verificationCodeExpires < new Date()
+    )
+      throw new AppError(ValidationError.CODE_EXPIRED, StatusCode.BAD_REQUEST);
+
+    if (user.verificationCode !== code)
+      throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
+    await user.updateOne({
+      password,
+      isVerified: true,
+      chanageCridentialsTime: Date.now(),
+      $unset: { verificationCode: 0, verificationCodeExpires: 0 },
+    });
+    return { message: "Done" };
   };
 }
 

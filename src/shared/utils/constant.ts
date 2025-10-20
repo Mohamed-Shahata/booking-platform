@@ -25,10 +25,12 @@ export const ValidationError = {
   CODE_IS_WRONG: "Code is wrong",
   PASSWORD_DO_NOT_MATCH: "Passwords don't match",
   EMAIL_OR_PASSWORD_IS_WRONG: "Email or password is wrong",
+  PASSWORD_IS_CHANAGED: "password is chanaged"
 };
 
 export const SubjectMail = {
   VERIFICATION_EMAIL: "Verification email",
+  REST_PASSWORD:"Rest_Password"
 };
 
 export const ServerErrors = {

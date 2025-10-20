@@ -5,6 +5,8 @@ import validate from "../../shared/middlewares/validation.middleware";
 import { registerSchema } from "./dto/verifyEmail.dto";
 import { verifyEmailSchema } from "./dto/register.dto";
 import { loginSchema } from "./dto/login.dto";
+import { restPasswordSchema } from "./dto/restPassword.dto";
+import { forgetPasswordSchema } from "./dto/forgetPassword.dto";
 
 class AuthRouter {
   router = Router();
@@ -35,6 +37,19 @@ class AuthRouter {
       "/login",
       validate(loginSchema),
       expressAsyncHandler(this.authController.login)
+    );
+    // patch ~/auth/forgetPassword
+
+       this.router.patch(
+      "/forgetPassword",
+      validate(forgetPasswordSchema),
+      expressAsyncHandler(this.authController.forgetPassword)
+    );
+     // patch ~/auth/restPassword
+        this.router.patch(
+      "/restPassword",
+      validate(restPasswordSchema),
+      expressAsyncHandler(this.authController.restPassword)
     );
   };
 }
