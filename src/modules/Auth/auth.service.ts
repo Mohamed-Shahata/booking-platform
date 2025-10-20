@@ -77,11 +77,12 @@ class AuthService {
     if (user.verificationCode !== code)
       throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
 
-    user.isVerified = true;
-    user.verificationCode = null;
-    user.verificationCodeExpires = null;
-
-    await user.save();
+await user.updateOne({
+  isVerified:true,
+  $unset:{
+     verificationCode: 0, verificationCodeExpires: 0
+  }
+})
 
     return { message: "User created successfully" };
   };
@@ -97,13 +98,11 @@ class AuthService {
     dto: LoginDto
   ): Promise<{ user: IUser; accessToken: string }> => {
     const { email, password } = dto;
-
     const user = await this.findUserByEmail(
       email,
       ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
       true
     );
-
     if (!user.isVerified)
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
@@ -122,52 +121,8 @@ class AuthService {
     return { user, accessToken };
   };
 
-  /**
-   * Finds a user by email with optional validation message and password selection.
-   *
-   * @param email - The email address of the user to search for
-   * @param messageValidation - (Optional) Custom error message if user is not found
-   * @param selectPassword - (Optional) Whether to include the user's password field in the result
-   *
-   * @returns The user document if found
-   * @throws AppError if the user does not exist
-   */
-  private findUserByEmail = async (
-    email: string,
-    messageValidation?: string,
-    selectPassword: boolean = false
-  ): Promise<IUser> => {
-    const selectPass = "+password";
-    const notSelectPass = "-password";
-    const user = await User.findOne({ email }).select(
-      selectPassword ? selectPass : notSelectPass
-    );
-    if (!user)
-      throw new AppError(
-        messageValidation || UserError.USER_NOT_FOUND,
-        StatusCode.BAD_REQUEST
-      );
-    return user;
-  };
+ 
 
-  /**
-   * Generates a future timestamp for OTP expiration.
-   *
-   * @param minutes - Expiration time in minutes
-   * @returns A Date object representing the expiry time
-   */
-  private generateExpiryTime = (minutes: number): Date => {
-    return new Date(Date.now() + minutes * 60 * 1000);
-  };
-
-  /**
-   * Generates a random numeric OTP code.
-   *
-   * @returns A 6 digit OTP as a string
-   */
-  private generateOtp = (): string => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
 
   public forgetPassword = async (
     dto: forgetPasswordDto
@@ -221,6 +176,53 @@ class AuthService {
     });
     return { message: "Done" };
   };
+  
+  /**
+   * Finds a user by email with optional validation message and password selection.
+   *
+   * @param email - The email address of the user to search for
+   * @param messageValidation - (Optional) Custom error message if user is not found
+   * @param selectPassword - (Optional) Whether to include the user's password field in the result
+   *
+   * @returns The user document if found
+   * @throws AppError if the user does not exist
+   */
+   private findUserByEmail = async (
+    email: string,
+    messageValidation?: string,
+    selectPassword: boolean = false
+  ): Promise<IUser> => {
+    const selectPass = "+password";
+    const notSelectPass = "-password";
+    const user = await User.findOne({ email }).select(
+      selectPassword ? selectPass : notSelectPass
+    );
+    if (!user)
+      throw new AppError(
+        messageValidation || UserError.USER_NOT_FOUND,
+        StatusCode.BAD_REQUEST
+      );
+    return user;
+  };
+  
+  /**
+   * Generates a future timestamp for OTP expiration.
+   *
+   * @param minutes - Expiration time in minutes
+   * @returns A Date object representing the expiry time
+   */
+    private generateExpiryTime = (minutes: number): Date => {
+    return new Date(Date.now() + minutes * 60 * 1000);
+  };
+  /**
+   * Generates a random numeric OTP code.
+   *
+   * @returns A 6 digit OTP as a string
+   */
+  private generateOtp = (): string => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
 }
 
 export default AuthService;
