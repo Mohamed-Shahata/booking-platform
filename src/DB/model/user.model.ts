@@ -66,10 +66,10 @@ const userSchema = new Schema<IUser>(
       enum: UserRoles,
       default: UserRoles.CLIENT,
     },
-        chanageCridentialsTime:{
-                type: Date,
+    chanageCridentialsTime: {
+      type: Date,
       default: null,
-        },
+    },
   },
   {
     timestamps: true,

@@ -7,10 +7,13 @@ import { UserRoles } from "../enums/UserRoles.enum";
 import AppError from "../errors/app.error";
 import User from "../../DB/model/user.model";
 
-
-export interface CustomJwtPayload extends JwtPayload{
+export interface CustomJwtPayload extends JwtPayload {
   id: Types.ObjectId;
-  role: string | UserRoles;
+  role: UserRoles;
+}
+
+export interface CustomRequest extends Request {
+  user?: CustomJwtPayload;
 }
 
 /**
@@ -23,7 +26,11 @@ export interface CustomJwtPayload extends JwtPayload{
  * @param res  Express response object
  * @param next Express next middleware function
  */
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+export const auth = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -31,10 +38,11 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError(AuthErrors.NO_TOKEN_PROVIDED, StatusCode.UNAUTHORIZED);
 
     const parts = authHeader.split(" ");
-    if (parts.length !== 2 || parts[0] === process.env.BEARER_PRIFIX)
+    if (parts.length !== 2 && parts[0] === process.env.BEARER_PRIFIX)
       throw new AppError(AuthErrors.BAD_TOKEN_FORMAT, StatusCode.UNAUTHORIZED);
 
     const token = parts[1];
+
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET!
@@ -44,9 +52,12 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
 
-  if (user.chanageCridentialsTime!?.getTime() >= decoded.iat!* 1000) {
- throw new AppError(AuthErrors.IN_VAILAD_CRIDENTIALSTIME,StatusCode.UNAUTHORIZED)
-  }
+    if (user.chanageCridentialsTime!?.getTime() >= decoded.iat! * 1000) {
+      throw new AppError(
+        AuthErrors.IN_VAILAD_CRIDENTIALSTIME,
+        StatusCode.UNAUTHORIZED
+      );
+    }
 
     req.user = decoded;
     next();
@@ -64,8 +75,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
  * - Blocks access if the authenticated user's role is not permitted.
  */
 export const authRoles = (...roles: Array<UserRoles>) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role))
+  return (req: CustomRequest, res: Response, next: NextFunction) => {
+    if (req.user && !roles.includes(req.user.role))
       throw new AppError(AuthErrors.ACCESS_DENIED, StatusCode.FORBIDDEN);
     next();
   };
@@ -76,8 +87,13 @@ export const authRoles = (...roles: Array<UserRoles>) => {
  * - Allows access only if the user is acting on their own account.
  * - Admin users bypass this restriction.
  */
-export const isAccount = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user.id !== req.params.userId && req.user.role !== UserRoles.ADMIN)
+export const isAccount = (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = new Types.ObjectId(req.params.userId);
+  if (req.user && req.user.id !== userId && req.user.role !== UserRoles.ADMIN)
     throw new AppError(AuthErrors.ACCESS_DENIED, StatusCode.FORBIDDEN);
   next();
 };

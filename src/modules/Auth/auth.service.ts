@@ -6,8 +6,8 @@ import { generateAccessToken } from "../../shared/utils/generateTokens";
 import mailService from "../../shared/Mail/mail.service";
 import { IUser } from "../User/user.type";
 import { LoginDto } from "./dto/login.dto";
-import { VerifyEmailDto } from "./dto/register.dto";
-import { RegisterDto } from "./dto/verifyEmail.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { VerifyEmailDto } from "./dto/verifyEmail.dto";
 import { restPasswordDto } from "./dto/restPassword.dto";
 import { forgetPasswordDto } from "./dto/forgetPassword.dto";
 
@@ -20,7 +20,7 @@ class AuthService {
    * @returns A success message indicating that an OTP has been sent
    */
   public register = async (dto: RegisterDto): Promise<{ message: string }> => {
-    const { email, username, gender, password } = dto;
+    const { email, username, gender, password, phone } = dto;
 
     const userExsits = await User.findOne({ email });
 
@@ -38,6 +38,7 @@ class AuthService {
       email,
       gender,
       password,
+      phone,
       verificationCode: otp,
       verificationCodeExpires: this.generateExpiryTime(5),
     });
@@ -77,12 +78,13 @@ class AuthService {
     if (user.verificationCode !== code)
       throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
 
-await user.updateOne({
-  isVerified:true,
-  $unset:{
-     verificationCode: 0, verificationCodeExpires: 0
-  }
-})
+    await user.updateOne({
+      isVerified: true,
+      $unset: {
+        verificationCode: 0,
+        verificationCodeExpires: 0,
+      },
+    });
 
     return { message: "User created successfully" };
   };
@@ -120,9 +122,6 @@ await user.updateOne({
 
     return { user, accessToken };
   };
-
- 
-
 
   public forgetPassword = async (
     dto: forgetPasswordDto
@@ -176,7 +175,7 @@ await user.updateOne({
     });
     return { message: "Done" };
   };
-  
+
   /**
    * Finds a user by email with optional validation message and password selection.
    *
@@ -187,7 +186,7 @@ await user.updateOne({
    * @returns The user document if found
    * @throws AppError if the user does not exist
    */
-   private findUserByEmail = async (
+  private findUserByEmail = async (
     email: string,
     messageValidation?: string,
     selectPassword: boolean = false
@@ -204,14 +203,14 @@ await user.updateOne({
       );
     return user;
   };
-  
+
   /**
    * Generates a future timestamp for OTP expiration.
    *
    * @param minutes - Expiration time in minutes
    * @returns A Date object representing the expiry time
    */
-    private generateExpiryTime = (minutes: number): Date => {
+  private generateExpiryTime = (minutes: number): Date => {
     return new Date(Date.now() + minutes * 60 * 1000);
   };
   /**
@@ -222,7 +221,6 @@ await user.updateOne({
   private generateOtp = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
-
 }
 
 export default AuthService;

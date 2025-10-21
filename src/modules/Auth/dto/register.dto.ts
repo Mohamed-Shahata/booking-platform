@@ -1,10 +1,14 @@
 import z from "zod";
+import { UserGender } from "../../User/user.enum";
 
-export const verifyEmailSchema = z.object({
+export const registerSchema = z.object({
   body: z.object({
+    username: z.string().min(2).max(15),
     email: z.email(),
-    code: z.string().min(6),
+    phone: z.string(),
+    password: z.string().min(8).max(50),
+    gender: z.enum([UserGender.MALE, UserGender.FEMALE, UserGender.OTHER]),
   }),
 });
 
-export type VerifyEmailDto = z.infer<typeof verifyEmailSchema>["body"];
+export type RegisterDto = z.infer<typeof registerSchema>["body"];

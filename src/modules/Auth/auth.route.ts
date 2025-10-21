@@ -2,8 +2,8 @@ import { Router } from "express";
 import expressAsyncHandler from "express-async-handler";
 import AuthController from "./auth.controller";
 import validate from "../../shared/middlewares/validation.middleware";
-import { registerSchema } from "./dto/verifyEmail.dto";
-import { verifyEmailSchema } from "./dto/register.dto";
+import { verifyEmailSchema } from "./dto/verifyEmail.dto";
+import { registerSchema } from "./dto/register.dto";
 import { loginSchema } from "./dto/login.dto";
 import { restPasswordSchema } from "./dto/restPassword.dto";
 import { forgetPasswordSchema } from "./dto/forgetPassword.dto";
@@ -40,13 +40,13 @@ class AuthRouter {
     );
     // patch ~/auth/forgetPassword
 
-       this.router.patch(
+    this.router.patch(
       "/forgetPassword",
       validate(forgetPasswordSchema),
       expressAsyncHandler(this.authController.forgetPassword)
     );
-     // patch ~/auth/restPassword
-        this.router.patch(
+    // patch ~/auth/restPassword
+    this.router.patch(
       "/restPassword",
       validate(restPasswordSchema),
       expressAsyncHandler(this.authController.restPassword)

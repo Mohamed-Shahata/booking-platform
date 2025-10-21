@@ -1,0 +1,9 @@
+# Update user API
+PATCH http://localhost:3000/api/v1/users
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZjQ3MDhjMWE5YTQ3M2ZmMTg4Y2NjNCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTAyNDI3MiwiZXhwIjoxNzYxNjI5MDcyfQ.5IOVe1H_OP6lUZX3TglDfWrnJZzQ5QYFh1_6BU08QTA
+
+{
+  "username":"Mohamed",
+  "phone":"01152432513"
+}
