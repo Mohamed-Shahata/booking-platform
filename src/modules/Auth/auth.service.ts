@@ -10,6 +10,7 @@ import { RegisterDto } from "./dto/register.dto";
 import { VerifyEmailDto } from "./dto/verifyEmail.dto";
 import { restPasswordDto } from "./dto/restPassword.dto";
 import { forgetPasswordDto } from "./dto/forgetPassword.dto";
+import { resendCodeDto } from "./dto/resendCode.dto";
 
 class AuthService {
   /**
@@ -206,6 +207,74 @@ class AuthService {
     return { message: "Done" };
   };
 
+/**
+ * Resends a new verification code (OTP) to the user's email.
+ * 
+ * This method:
+ * 1. Finds the user by their email.
+ * 2. Checks if the user account is verified.
+ * 3. Generates a new OTP code.
+ * 4. Sends the OTP to the user's email.
+ * 5. Updates the user's record with the new OTP, its expiry time, and the timestamp when it was sent.
+ * 
+ * @param {resendCodeDto} dto - The data transfer object containing the user's email.
+ * @returns {Promise<{ message: string }>} A confirmation message indicating that the operation was completed.
+ * 
+ * @throws {AppError} If the user is not verified or the email does not exist.
+ */
+public resendCode = async (
+  dto: resendCodeDto
+): Promise<{ message: string }> => {
+  const { email } = dto;
+  // 1. Find the user by email
+  const user = await this.findUserByEmail(
+    email,
+    ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+    true
+  );
+
+  // 2. Check if the user is verified
+  if (!user.isVerified)
+    throw new AppError(
+      UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
+      StatusCode.BAD_REQUEST
+    );
+
+  const now = Date.now();
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  // 3. Check if a code was sent recently
+  if (user.otpSentAt) {
+    const diff = now - new Date(user.otpSentAt).getTime();
+
+    if (diff < FIVE_MINUTES) {
+      const remaining = Math.ceil((FIVE_MINUTES - diff) / 1000 / 60);
+      throw new AppError(
+        `Please wait ${remaining} minute(s) before requesting another code.`,
+        StatusCode.BAD_REQUEST
+      );
+    }
+  }
+
+  // 4. Generate a new OTP
+  const otp = this.generateOtp();
+
+  // 5. Send the OTP to the user's email
+  await mailService.sendRestPassword(email, user.username, otp);
+
+  // 6. Update the user with the new OTP, expiry time, and sent time
+  await user.updateOne({
+    verificationCode: otp,
+    verificationCodeExpires: this.generateExpiryTime(5),
+    otpSentAt: new Date(),
+  });
+
+  // 7. Return a success message
+  return { message: "Verification code resent successfully" };
+};
+
+
+
   /**
    * Finds a user by email with optional validation message and password selection.
    *
@@ -234,7 +303,7 @@ class AuthService {
     return user;
   };
 
-  
+
   /**
    * Generates a future timestamp for OTP expiration.
    *

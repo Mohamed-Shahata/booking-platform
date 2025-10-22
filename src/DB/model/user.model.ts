@@ -78,6 +78,7 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    otpSentAt: Date
   },
   {
     timestamps: true,

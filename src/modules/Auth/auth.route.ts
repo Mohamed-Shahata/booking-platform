@@ -7,6 +7,7 @@ import { registerSchema } from "./dto/register.dto";
 import { loginSchema } from "./dto/login.dto";
 import { restPasswordSchema } from "./dto/restPassword.dto";
 import { forgetPasswordSchema } from "./dto/forgetPassword.dto";
+import { resendCodeSchema } from "./dto/resendCode.dto";
 
 class AuthRouter {
   router = Router();
@@ -51,6 +52,14 @@ class AuthRouter {
       validate(restPasswordSchema),
       expressAsyncHandler(this.authController.restPassword)
     );
+        // patch ~/auth/restPassword
+    this.router.post(
+      "/restPassword",
+      validate(resendCodeSchema),
+      expressAsyncHandler(this.authController.resendCode)
+    );
   };
+  
+  
 }
 export default AuthRouter;
