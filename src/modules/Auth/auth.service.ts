@@ -138,6 +138,12 @@ class AuthService {
     return { user, accessToken };
   };
 
+  /**
+   * Verifies user's email by checking the provided OTP code.
+   *
+   * @param dto - Email verification
+   * @returns A success message upon successful send code
+   */
   public forgetPassword = async (
     dto: forgetPasswordDto
   ): Promise<{ message: string }> => {
@@ -152,7 +158,9 @@ class AuthService {
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
         StatusCode.BAD_REQUEST
       );
+        // generate a new OTP
     const otp = this.generateOtp();
+       // send otp to user email
     await mailService.sendRestPassword(email, user.username, otp);
     await user.updateOne({
       verificationCode: otp,
@@ -160,6 +168,13 @@ class AuthService {
     });
     return { message: "Done" };
   };
+  
+  /**
+   * Verifies user's email by checking the provided OTP code.
+   *
+   * @param dto - Email and OTP code and password for verification
+   * @returns A success message upon password was changed
+   */
   public restPassword = async (
     dto: restPasswordDto
   ): Promise<{ message: string }> => {
@@ -179,7 +194,7 @@ class AuthService {
       user.verificationCodeExpires < new Date()
     )
       throw new AppError(ValidationError.CODE_EXPIRED, StatusCode.BAD_REQUEST);
-
+// check the otp = code  
     if (user.verificationCode !== code)
       throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
     await user.updateOne({
@@ -219,6 +234,7 @@ class AuthService {
     return user;
   };
 
+  
   /**
    * Generates a future timestamp for OTP expiration.
    *
