@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import AuthRouter from "./modules/Auth/auth.route";
 import errorHandler from "./shared/middlewares/errorHandler.middleware";
 import UserRouter from "./modules/User/user.route";
-
+import "./jobs/deleteExpiredUser.job";
 const app = e();
 
 // init Routes

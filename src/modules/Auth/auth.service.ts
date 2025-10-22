@@ -105,11 +105,26 @@ class AuthService {
       ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
       true
     );
+
     if (!user.isVerified)
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
         StatusCode.BAD_REQUEST
       );
+
+    // check account is deleted or no
+    if (user.isDeleted) {
+      const daysSinceDelete = user.deletedAt
+        ? (Date.now() - user.deletedAt.getTime()) / (1000 * 60 * 60 * 24)
+        : 0;
+
+      if (daysSinceDelete < 7) {
+        user.isDeleted = false;
+        user.deletedAt = null;
+        await user.save();
+      }
+    }
+
     const isMatch = await user.comparePassword(password);
     if (!isMatch)
       throw new AppError(

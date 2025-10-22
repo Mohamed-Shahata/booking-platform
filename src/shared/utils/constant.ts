@@ -42,4 +42,6 @@ export const ServerErrors = {
 export const UserSuccess = {
   GET_ALL_USERS_DONE: "Get All users done",
   UPDATED_USER_SUCCESSFULLY: "Updated user successfully",
+  YOUR_ACCOUNT_HAS_BEEN_DEACTIVATED_AND_SCHEDULED_FOR_PERMANENT_DELETION_AFTER_7_DAYS_YOU_CAN_REACTIVATE_IT_ANYTIME_BY_LOGGING_IN_AGAIN_BEFORE_THAT_PERIOD:
+    "Your account has been deactivated and scheduled for permanet deletion after 7 days. You can reactivate it anytime by logging in again before that period.",
 };

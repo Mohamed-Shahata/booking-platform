@@ -15,6 +15,8 @@ export interface IUser extends Document {
   resetPasswordToken: string | null;
   resetPasswordExpire: Date | null;
   role: string;
+  isDeleted: boolean;
+  deletedAt: Date | null;
   chanageCridentialsTime?: Date | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }

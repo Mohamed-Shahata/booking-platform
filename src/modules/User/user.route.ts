@@ -3,7 +3,11 @@ import UserController from "./user.controller";
 import expressAsyncHandler from "express-async-handler";
 import validate from "../../shared/middlewares/validation.middleware";
 import { getAllUserSchema } from "./dto/getAllUsers.dto";
-import { auth, authRoles } from "../../shared/middlewares/auth.middleware";
+import {
+  auth,
+  authRoles,
+  isAccount,
+} from "../../shared/middlewares/auth.middleware";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import { updateUserSchema } from "./dto/updateUser.dto";
 
@@ -29,7 +33,15 @@ class UserRouter {
       "/",
       validate(updateUserSchema),
       auth,
+      isAccount,
       expressAsyncHandler(this.userController.update)
+    );
+
+    this.router.delete(
+      "/",
+      auth,
+      isAccount,
+      expressAsyncHandler(this.userController.delete)
     );
   }
 }

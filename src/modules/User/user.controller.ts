@@ -13,7 +13,7 @@ class UserController {
     this.userService = new UserService();
   }
 
-  // Get ~/users?page=1&limit=20
+  // GET ~/users?page=1&limit=20
   public gelAllUsers = async (req: Request, res: Response) => {
     const dto = req.query;
 
@@ -26,7 +26,17 @@ class UserController {
     });
   };
 
-  // Put ~/users?page=1&limit=20
+  /**
+   * dto is => Validation data is {username, phone, gender}
+   * PATCH ~/users
+   *
+   * example
+   * {
+   *  username: "ex_username",
+   *  phone: "ex_01" => min length must be 11 digits,
+   *  gender: "ex_other"
+   * }
+   */
   public update = async (req: CustomRequest, res: Response) => {
     const userId = new Types.ObjectId(req.user?.id);
     const dto = req.body;
@@ -37,6 +47,18 @@ class UserController {
       data: user,
       success: true,
       message: UserSuccess.UPDATED_USER_SUCCESSFULLY,
+    });
+  };
+
+  // DELETE ~/users
+  public delete = async (req: CustomRequest, res: Response) => {
+    const userId = new Types.ObjectId(req.user?.id);
+
+    const { message } = await this.userService.delete(userId);
+
+    sendResponse(res, StatusCode.OK, {
+      success: true,
+      message: message,
     });
   };
 }
