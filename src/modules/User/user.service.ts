@@ -82,6 +82,16 @@ class UserService {
     };
   };
 
+  public getMe = async (id: Types.ObjectId): Promise<IUser> => {
+    const user = await this.getOneUser(id);
+    return user;
+  };
+
+  public getOne = async (id: Types.ObjectId): Promise<IUser> => {
+    const user = await this.getOneUser(id);
+    return user;
+  };
+
   /**
    * Get single user by ID (private method)
    *
@@ -91,7 +101,7 @@ class UserService {
    * @param id - The user's MongoDB ObjectId
    * @returns The found user document
    */
-  private getOne = async (id: Types.ObjectId): Promise<IUser> => {
+  private getOneUser = async (id: Types.ObjectId): Promise<IUser> => {
     const user = await User.findById(id);
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);

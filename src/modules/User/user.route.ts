@@ -29,6 +29,18 @@ class UserRouter {
       expressAsyncHandler(this.userController.gelAllUsers)
     );
 
+    this.router.get(
+      "/me",
+      auth,
+      expressAsyncHandler(this.userController.getMe)
+    );
+
+    this.router.get(
+      "/:userId",
+      auth,
+      expressAsyncHandler(this.userController.getOne)
+    );
+
     this.router.patch(
       "/",
       validate(updateUserSchema),

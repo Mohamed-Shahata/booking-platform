@@ -61,6 +61,30 @@ class UserController {
       message: message,
     });
   };
+
+  public getOne = async (req: Request, res: Response) => {
+    const userId = new Types.ObjectId(req.params.userId);
+
+    const user = await this.userService.getOne(userId);
+
+    sendResponse(res, StatusCode.OK, {
+      data: { user },
+      success: true,
+      message: "Done",
+    });
+  };
+
+  public getMe = async (req: CustomRequest, res: Response) => {
+    const userId = new Types.ObjectId(req.user?.id);
+
+    const user = await this.userService.getMe(userId);
+
+    sendResponse(res, StatusCode.OK, {
+      data: { user },
+      success: true,
+      message: "Done",
+    });
+  };
 }
 
 export default UserController;
