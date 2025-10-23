@@ -52,9 +52,9 @@ class AuthRouter {
       validate(restPasswordSchema),
       expressAsyncHandler(this.authController.restPassword)
     );
-        // patch ~/auth/restPassword
+        // patch ~/auth/resendCode
     this.router.post(
-      "/restPassword",
+      "/resendCode",
       validate(resendCodeSchema),
       expressAsyncHandler(this.authController.resendCode)
     );
