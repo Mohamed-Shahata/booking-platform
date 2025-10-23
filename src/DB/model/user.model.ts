@@ -4,6 +4,27 @@ import bcrypt from "bcryptjs";
 import { IUser } from "../../modules/User/user.type";
 import { UserGender } from "../../modules/User/user.enum";
 
+export const DEFAULT_AVATAR = {
+  url: "https://res.cloudinary.com/dihm4riw5/image/upload/v1761192839/user-interface-design-computer-icons-default-png-favpng-A0tt8aVzdqP30RjwFGhjNABpm_h4wjdk.jpg",
+  publicId:
+    "user-interface-design-computer-icons-default-png-favpng-A0tt8aVzdqP30RjwFGhjNABpm_h4wjdk",
+};
+
+const avatarSchema = new Schema(
+  {
+    url: {
+      type: String,
+      required: true,
+      default: DEFAULT_AVATAR.url,
+    },
+    publicId: {
+      type: String,
+      default: DEFAULT_AVATAR.publicId,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new Schema<IUser>(
   {
     username: {
@@ -28,10 +49,9 @@ const userSchema = new Schema<IUser>(
       enum: UserGender,
       default: UserGender.OTHER,
     },
-    image: {
-      type: String,
-      default:
-        "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+    avatar: {
+      type: avatarSchema,
+      default: DEFAULT_AVATAR,
     },
     phone: {
       type: String,

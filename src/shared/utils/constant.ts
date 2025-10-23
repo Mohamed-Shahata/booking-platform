@@ -13,6 +13,10 @@ export const Environment = {
   DEVELOPMENT: "development",
 };
 
+export const CloudinaryFolders = {
+  AVATARS: "avatars",
+};
+
 export const UserError = {
   USER_ACCOUNT_IS_VERIFIED: "User acount is verified",
   USER_NOT_FOUND: "User not found",
@@ -40,6 +44,8 @@ export const ServerErrors = {
 
 // Success Message
 export const UserSuccess = {
+  UPLOADED_AVATAR_SUCCESSFULLY: "Uploaded avatar successfully",
+  DELETED_AVATAR_SUCCESSFULLY: "Deleted avatar successfully",
   GET_ALL_USERS_DONE: "Get All users done",
   UPDATED_USER_SUCCESSFULLY: "Updated user successfully",
   YOUR_ACCOUNT_HAS_BEEN_DEACTIVATED_AND_SCHEDULED_FOR_PERMANENT_DELETION_AFTER_7_DAYS_YOU_CAN_REACTIVATE_IT_ANYTIME_BY_LOGGING_IN_AGAIN_BEFORE_THAT_PERIOD:

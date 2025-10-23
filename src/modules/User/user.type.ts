@@ -1,12 +1,17 @@
 import { Document, Types } from "mongoose";
 
+interface IAvatar {
+  url: string;
+  publicId: string | null;
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   username: string;
   email: string;
   password: string;
   gender: string;
-  image?: string;
+  avatar?: IAvatar;
   phone?: string | null;
   address?: string | null;
   isVerified: boolean;
