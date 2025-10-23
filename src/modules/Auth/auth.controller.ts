@@ -63,7 +63,7 @@ class AuthController {
       success: true,
     });
   };
-    /**
+  /**
    * dto is => Validation data is {email ,code, password}
    * POST ~/auth/restPassword
    *
@@ -74,7 +74,7 @@ class AuthController {
    * code:"123456"=> min length must be 6 digits
    * }
    */
- public restPassword = async (req: Request, res: Response) => {
+  public restPassword = async (req: Request, res: Response) => {
     const dto = req.body;
     const { message } = await this.authService.restPassword(dto);
 
@@ -84,16 +84,16 @@ class AuthController {
     });
   };
 
-        /**
-     * dto is => Validation data is {email}
-     * POST ~/auth/forgetPassword
-     *
-     * example
-     * {
-     *  email: "ex_email@gmail.com",
-     * }
-     */
-   public forgetPassword = async (req: Request, res: Response) => {
+  /**
+   * dto is => Validation data is {email}
+   * POST ~/auth/forgetPassword
+   *
+   * example
+   * {
+   *  email: "ex_email@gmail.com",
+   * }
+   */
+  public forgetPassword = async (req: Request, res: Response) => {
     const dto = req.body;
     const { message } = await this.authService.forgetPassword(dto);
     sendResponse(res, StatusCode.OK, {
@@ -101,7 +101,7 @@ class AuthController {
       success: true,
     });
   };
-        /**
+  /**
    * dto is => Validation data is {email}
    * POST ~/auth/forgetPassword
    *
@@ -111,7 +111,7 @@ class AuthController {
    * }
    */
 
-           public resendCode = async (req: Request, res: Response) => {
+  public resendCode = async (req: Request, res: Response) => {
     const dto = req.body;
     const { message } = await this.authService.resendCode(dto);
     sendResponse(res, StatusCode.OK, {
@@ -120,6 +120,5 @@ class AuthController {
     });
   };
 }
-
 
 export default AuthController;

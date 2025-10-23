@@ -3,6 +3,6 @@ POST http://localhost:3000/api/v1/auth/verify
 Content-Type: application/json
 
 {
-  "email":"ahmed@gmail.com",
-  "code":"4294628"
+  "email":"mohamedmrslan@gmail.com",
+  "code":"774360"
 }

@@ -21,7 +21,7 @@ class MailService {
 
   private sendMail = async (to: string, subject: string, html: string) => {
     return await this.transport.sendMail({
-      from: `"My App" <${process.env.SMTP_USER}>`,
+      from: `"My App" <${process.env.SMTP_USERNAME}>`,
       to,
       subject,
       html,
@@ -32,7 +32,7 @@ class MailService {
     const html = getVreficationTemplate(name, code);
     return this.sendMail(to, SubjectMail.VERIFICATION_EMAIL, html);
   };
-    public sendRestPassword = (to: string, name: string, code: string) => {
+  public sendRestPassword = (to: string, name: string, code: string) => {
     const html = getVreficationTemplate(name, code);
     return this.sendMail(to, SubjectMail.REST_PASSWORD, html);
   };
