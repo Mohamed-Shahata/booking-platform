@@ -1,11 +1,16 @@
 import { Types } from "mongoose";
-import User from "../../DB/model/user.model";
+import User, { DEFAULT_AVATAR } from "../../DB/model/user.model";
 import { GetAllUserDto } from "./dto/getAllUsers.dto";
 import { IUser } from "./user.type";
 import AppError from "../../shared/errors/app.error";
-import { UserError, UserSuccess } from "../../shared/utils/constant";
+import {
+  CloudinaryFolders,
+  UserError,
+  UserSuccess,
+} from "../../shared/utils/constant";
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import { UpdateUserDto } from "./dto/updateUser.dto";
+import CloudinaryService from "../../shared/services/cloudinary.service";
 
 class UserService {
   constructor() {}
@@ -82,14 +87,100 @@ class UserService {
     };
   };
 
+  /**
+   * Retrieves the authenticated user's data by ID.
+   *
+   * @param id - The user's ObjectId
+   * @returns The user document
+   */
   public getMe = async (id: Types.ObjectId): Promise<IUser> => {
     const user = await this.getOneUser(id);
     return user;
   };
 
+  /**
+   * Retrieves a single user by ID.
+   *
+   * @param id - The user's ObjectId
+   * @returns The user document
+   */
   public getOne = async (id: Types.ObjectId): Promise<IUser> => {
     const user = await this.getOneUser(id);
     return user;
+  };
+
+  /**
+   * Uploads a new avatar to Cloudinary and updates the user's avatar field.
+   * If the user already has an avatar, the old one is deleted first.
+   *
+   * @param userId - The user's ObjectId
+   * @param file - The local path of the image to upload
+   * @returns A success message
+   */
+  public uploadAndUpdateAvatar = async (
+    userId: Types.ObjectId,
+    file: string
+  ): Promise<{ message: string }> => {
+    const user = await this.getOneUser(userId);
+
+    if (!user.avatar?.publicId) {
+      const uploadResult = await CloudinaryService.uploadImage(
+        file,
+        CloudinaryFolders.AVATARS
+      );
+      await User.updateOne(
+        { _id: userId },
+        {
+          avatar: {
+            url: uploadResult.url,
+            publicId: uploadResult.publicId,
+          },
+        }
+      );
+    } else {
+      await CloudinaryService.deleteImage(user.avatar?.publicId!);
+      const uploadResult = await CloudinaryService.uploadImage(
+        file,
+        CloudinaryFolders.AVATARS
+      );
+      await User.updateOne(
+        { _id: userId },
+        {
+          avatar: {
+            url: uploadResult.url,
+            publicId: uploadResult.publicId,
+          },
+        }
+      );
+    }
+
+    return { message: UserSuccess.UPDATED_USER_SUCCESSFULLY };
+  };
+
+  /**
+   * Deletes the user's avatar from Cloudinary and clears the avatar field in the database.
+   *
+   * @param userId - The user's ObjectId
+   * @returns A success message
+   */
+  public deleteAvatar = async (
+    userId: Types.ObjectId
+  ): Promise<{ message: string }> => {
+    const user = await this.getOneUser(userId);
+
+    await CloudinaryService.deleteImage(user.avatar?.publicId!);
+
+    await User.updateOne(
+      { _id: userId },
+      {
+        avatar: {
+          url: DEFAULT_AVATAR.url,
+          publicId: DEFAULT_AVATAR.publicId,
+        },
+      }
+    );
+
+    return { message: UserSuccess.DELETED_AVATAR_SUCCESSFULLY };
   };
 
   /**

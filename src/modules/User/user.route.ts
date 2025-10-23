@@ -10,6 +10,7 @@ import {
 } from "../../shared/middlewares/auth.middleware";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import { updateUserSchema } from "./dto/updateUser.dto";
+import { upload } from "../../shared/middlewares/multer.middleware";
 
 class UserRouter {
   router = Router();
@@ -54,6 +55,19 @@ class UserRouter {
       auth,
       isAccount,
       expressAsyncHandler(this.userController.delete)
+    );
+
+    this.router.post(
+      "/upload-avatar",
+      auth,
+      upload.single("avatar"),
+      expressAsyncHandler(this.userController.uploadAndUpdateAvatar)
+    );
+
+    this.router.delete(
+      "/delete-avatar",
+      auth,
+      expressAsyncHandler(this.userController.deletedAvatar)
     );
   }
 }

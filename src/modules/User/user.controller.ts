@@ -5,6 +5,8 @@ import { StatusCode } from "../../shared/enums/statusCode.enum";
 import { Types } from "mongoose";
 import { UserSuccess } from "../../shared/utils/constant";
 import { CustomRequest } from "../../shared/middlewares/auth.middleware";
+import AppError from "../../shared/errors/app.error";
+import CloudinaryService from "../../shared/services/cloudinary.service";
 
 class UserController {
   private userService: UserService;
@@ -62,6 +64,7 @@ class UserController {
     });
   };
 
+  // GET ~/users/:userId
   public getOne = async (req: Request, res: Response) => {
     const userId = new Types.ObjectId(req.params.userId);
 
@@ -74,6 +77,7 @@ class UserController {
     });
   };
 
+  // GET ~/users/me
   public getMe = async (req: CustomRequest, res: Response) => {
     const userId = new Types.ObjectId(req.user?.id);
 
@@ -84,6 +88,29 @@ class UserController {
       success: true,
       message: "Done",
     });
+  };
+
+  // POST ~/users/upload-avatar
+  public uploadAndUpdateAvatar = async (req: CustomRequest, res: Response) => {
+    const file = req.file;
+    const userId = new Types.ObjectId(req.user?.id);
+
+    if (!file) throw new AppError("No file uploaded", StatusCode.BAD_REQUEST);
+
+    const { message } = await this.userService.uploadAndUpdateAvatar(
+      userId,
+      file.path
+    );
+
+    sendResponse(res, StatusCode.OK, { success: true, message });
+  };
+  // DELETE ~/users/delete-avatar
+  public deletedAvatar = async (req: CustomRequest, res: Response) => {
+    const userId = new Types.ObjectId(req.user?.id);
+
+    const { message } = await this.userService.deleteAvatar(userId);
+
+    sendResponse(res, StatusCode.OK, { success: true, message });
   };
 }
 

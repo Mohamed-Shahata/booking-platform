@@ -33,7 +33,7 @@
   "description": "A real-time appointment and consultation booking platform that connects clients with experts across various fields such as IT, healthcare, and business. Users can browse experts, schedule sessions, make online payments, and join live chat or video consultation rooms with time tracking and notification features.",
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "cloudinary": "^2.7.0",
+    "cloudinary": "^2.8.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
