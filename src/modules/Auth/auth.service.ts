@@ -81,10 +81,7 @@ class AuthService {
 
     await user.updateOne({
       isVerified: true,
-      $unset: {
-        verificationCode: 0,
-        verificationCodeExpires: 0,
-      },
+     $unset: { verificationCode: 0, verificationCodeExpires: 0 ,resetPasswordToken:0,resetPasswordExpire:0,otpSentAt:0},
     });
 
     return { message: "User created successfully" };
@@ -202,7 +199,7 @@ class AuthService {
       password,
       isVerified: true,
       chanageCridentialsTime: Date.now(),
-      $unset: { verificationCode: 0, verificationCodeExpires: 0 },
+      $unset: { verificationCode: 0, verificationCodeExpires: 0 ,resetPasswordToken:0,resetPasswordExpire:0,otpSentAt:0},
     });
     return { message: "Done" };
   };
@@ -234,11 +231,11 @@ public resendCode = async (
   );
 
   // 2. Check if the user is verified
-  if (!user.isVerified)
-    throw new AppError(
-      UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-      StatusCode.BAD_REQUEST
-    );
+  // if (!user.isVerified)
+  //   throw new AppError(
+  //     UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
+  //     StatusCode.BAD_REQUEST
+  //   );
 
   const now = Date.now();
   const FIVE_MINUTES = 5 * 60 * 1000;

@@ -121,6 +121,25 @@ userSchema.methods.comparePassword = async function (
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate() as any;
+  if (update.password) {
+    const salt = await bcrypt.genSalt(+process.env.SALT!);
+    update.password = await bcrypt.hash(update.password, salt);
+    this.setUpdate(update);
+  }
+  next();
+});
+userSchema.pre("updateOne", async function (next) {
+  const update = this.getUpdate() as any;
+  if (update.password) {
+    const salt = await bcrypt.genSalt(+process.env.SALT!);
+    update.password = await bcrypt.hash(update.password, salt);
+    this.setUpdate(update);
+  }
+
+  next();
+});
 
 const User = model<IUser>("User", userSchema);
 export default User;
