@@ -22,6 +22,7 @@ export interface IUser extends Document {
   role: string;
   isDeleted: boolean;
   deletedAt: Date | null;
+  otpSentAt?: Date
   chanageCridentialsTime?: Date | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
