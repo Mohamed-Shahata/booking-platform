@@ -25,7 +25,13 @@ const storage = multer.diskStorage({
  * File filter to allow only image types
  */
 const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "image/webp",
+    "application/pdf",
+  ];
   if (!allowedTypes.includes(file.mimetype))
     return cb(
       new AppError(
@@ -43,8 +49,20 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
  * - Uses the configured storage and file filter
  * - Sets a file size limit (5 MB)
  */
-export const upload = multer({
+export const uploadImage = multer({
   storage,
+  fileFilter,
+  limits: { fieldSize: 5 * 1024 * 1024 }, // 5 MB
+});
+
+/**
+ * Initialize Multer upload middleware
+ *
+ * - Uses the configured storage and file filter
+ * - Sets a file size limit (5 MB)
+ */
+export const uploadFile = multer({
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: { fieldSize: 5 * 1024 * 1024 }, // 5 MB
 });

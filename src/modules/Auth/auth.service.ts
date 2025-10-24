@@ -1,26 +1,36 @@
 import User from "../../DB/model/user.model";
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AppError from "../../shared/errors/app.error";
-import { UserError, ValidationError } from "../../shared/utils/constant";
+import {
+  CloudinaryFolders,
+  UserError,
+  ValidationError,
+} from "../../shared/utils/constant";
 import { generateAccessToken } from "../../shared/utils/generateTokens";
 import mailService from "../../shared/Mail/mail.service";
 import { IUser } from "../User/user.type";
 import { LoginDto } from "./dto/login.dto";
-import { RegisterDto } from "./dto/register.dto";
+import { RegisterClientDto } from "./dto/registerClient.dto";
 import { VerifyEmailDto } from "./dto/verifyEmail.dto";
 import { restPasswordDto } from "./dto/restPassword.dto";
 import { forgetPasswordDto } from "./dto/forgetPassword.dto";
 import { resendCodeDto } from "./dto/resendCode.dto";
+import { RegisterExpertDto } from "./dto/registerExpert.dto";
+import ExpertProfile from "../../DB/model/expertProfile.model";
+import CloudinaryService from "../../shared/services/cloudinary.service";
+import { UserRoles } from "../../shared/enums/UserRoles.enum";
 
 class AuthService {
   /**
-   * Registers a new user by creating an account, generating an OTP,
+   * Registers a new user client by creating an account, generating an OTP,
    * and sending a verification email.
    *
    * @param dto - The user registration data (email, username, gender, password)
    * @returns A success message indicating that an OTP has been sent
    */
-  public register = async (dto: RegisterDto): Promise<{ message: string }> => {
+  public registerClient = async (
+    dto: RegisterClientDto
+  ): Promise<{ message: string }> => {
     const { email, username, gender, password, phone } = dto;
 
     const userExsits = await User.findOne({ email });
@@ -30,9 +40,6 @@ class AuthService {
 
     // generate a new OTP
     const otp = this.generateOtp();
-
-    // send otp to user email
-    await mailService.sendVreficationEmail(email, username, otp);
 
     const user = await User.create({
       username,
@@ -44,7 +51,75 @@ class AuthService {
       verificationCodeExpires: this.generateExpiryTime(5),
     });
 
-    await user.save();
+    // send otp to user email
+    await mailService.sendVreficationEmail(email, username, otp);
+
+    return {
+      message: "We sent a new otp of your email, check your email please",
+    };
+  };
+
+  /**
+   * Registers a new user expert by creating an account, generating an OTP,
+   * and sending a verification email.
+   *
+   * @param dto - The user registration data (email, username, gender, password, aboutYou, specialty, yearsOfExperience)
+   * @returns A success message indicating that an OTP has been sent
+   */
+  public registerExpert = async (
+    dto: RegisterExpertDto,
+    cvFile: Express.Multer.File
+  ): Promise<{ message: string }> => {
+    const {
+      email,
+      username,
+      gender,
+      password,
+      phone,
+      aboutYou,
+      specialty,
+      yearsOfExperience,
+    } = dto;
+
+    const userExsits = await User.findOne({ email });
+
+    if (userExsits)
+      throw new AppError(UserError.USER_ALREADY_EXSITS, StatusCode.CONFLICT);
+
+    // generate a new OTP
+    const otp = this.generateOtp();
+
+    const user = await User.create({
+      username,
+      email,
+      gender,
+      password,
+      phone,
+      role: UserRoles.EXPERT,
+      verificationCode: otp,
+      verificationCodeExpires: this.generateExpiryTime(5),
+    });
+
+    // upload cv file on cloudinary
+    const cvUploadedFile = await CloudinaryService.uploadStreamFile(
+      cvFile.buffer,
+      CloudinaryFolders.CVS
+    );
+
+    // create a expert profile
+    await ExpertProfile.create({
+      userId: user._id,
+      specialty,
+      aboutYou,
+      yearsOfExperience,
+      cv: {
+        url: cvUploadedFile.url,
+        publicId: cvUploadedFile.publicId,
+      },
+    });
+
+    // send otp to user email
+    await mailService.sendVreficationEmail(email, username, otp);
 
     return {
       message: "We sent a new otp of your email, check your email please",
@@ -81,7 +156,13 @@ class AuthService {
 
     await user.updateOne({
       isVerified: true,
-     $unset: { verificationCode: 0, verificationCodeExpires: 0 ,resetPasswordToken:0,resetPasswordExpire:0,otpSentAt:0},
+      $unset: {
+        verificationCode: 0,
+        verificationCodeExpires: 0,
+        resetPasswordToken: 0,
+        resetPasswordExpire: 0,
+        otpSentAt: 0,
+      },
     });
 
     return { message: "User created successfully" };
@@ -156,9 +237,9 @@ class AuthService {
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
         StatusCode.BAD_REQUEST
       );
-        // generate a new OTP
+    // generate a new OTP
     const otp = this.generateOtp();
-       // send otp to user email
+    // send otp to user email
     await mailService.sendRestPassword(email, user.username, otp);
     await user.updateOne({
       verificationCode: otp,
@@ -166,7 +247,7 @@ class AuthService {
     });
     return { message: "Done" };
   };
-  
+
   /**
    * Verifies user's email by checking the provided OTP code.
    *
@@ -192,85 +273,89 @@ class AuthService {
       user.verificationCodeExpires < new Date()
     )
       throw new AppError(ValidationError.CODE_EXPIRED, StatusCode.BAD_REQUEST);
-// check the otp = code  
+    // check the otp = code
     if (user.verificationCode !== code)
       throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
     await user.updateOne({
       password,
       isVerified: true,
       chanageCridentialsTime: Date.now(),
-      $unset: { verificationCode: 0, verificationCodeExpires: 0 ,resetPasswordToken:0,resetPasswordExpire:0,otpSentAt:0},
+      $unset: {
+        verificationCode: 0,
+        verificationCodeExpires: 0,
+        resetPasswordToken: 0,
+        resetPasswordExpire: 0,
+        otpSentAt: 0,
+      },
     });
     return { message: "Done" };
   };
 
-/**
- * Resends a new verification code (OTP) to the user's email.
- * 
- * This method:
- * 1. Finds the user by their email.
- * 2. Checks if the user account is verified.
- * 3. Generates a new OTP code.
- * 4. Sends the OTP to the user's email.
- * 5. Updates the user's record with the new OTP, its expiry time, and the timestamp when it was sent.
- * 
- * @param {resendCodeDto} dto - The data transfer object containing the user's email.
- * @returns {Promise<{ message: string }>} A confirmation message indicating that the operation was completed.
- * 
- * @throws {AppError} If the user is not verified or the email does not exist.
- */
-public resendCode = async (
-  dto: resendCodeDto
-): Promise<{ message: string }> => {
-  const { email } = dto;
-  // 1. Find the user by email
-  const user = await this.findUserByEmail(
-    email,
-    ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
-    true
-  );
+  /**
+   * Resends a new verification code (OTP) to the user's email.
+   *
+   * This method:
+   * 1. Finds the user by their email.
+   * 2. Checks if the user account is verified.
+   * 3. Generates a new OTP code.
+   * 4. Sends the OTP to the user's email.
+   * 5. Updates the user's record with the new OTP, its expiry time, and the timestamp when it was sent.
+   *
+   * @param {resendCodeDto} dto - The data transfer object containing the user's email.
+   * @returns {Promise<{ message: string }>} A confirmation message indicating that the operation was completed.
+   *
+   * @throws {AppError} If the user is not verified or the email does not exist.
+   */
+  public resendCode = async (
+    dto: resendCodeDto
+  ): Promise<{ message: string }> => {
+    const { email } = dto;
+    // 1. Find the user by email
+    const user = await this.findUserByEmail(
+      email,
+      ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+      true
+    );
 
-  // 2. Check if the user is verified
-  // if (!user.isVerified)
-  //   throw new AppError(
-  //     UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-  //     StatusCode.BAD_REQUEST
-  //   );
+    // 2. Check if the user is verified
+    // if (!user.isVerified)
+    //   throw new AppError(
+    //     UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
+    //     StatusCode.BAD_REQUEST
+    //   );
 
-  const now = Date.now();
-  const FIVE_MINUTES = 5 * 60 * 1000;
+    const now = Date.now();
+    const FIVE_MINUTES = 5 * 60 * 1000;
 
-  // 3. Check if a code was sent recently
-  if (user.otpSentAt) {
-    const diff = now - new Date(user.otpSentAt).getTime();
+    // 3. Check if a code was sent recently
+    if (user.otpSentAt) {
+      const diff = now - new Date(user.otpSentAt).getTime();
 
-    if (diff < FIVE_MINUTES) {
-      const remaining = Math.ceil((FIVE_MINUTES - diff) / 1000 / 60);
-      throw new AppError(
-        `Please wait ${remaining} minute(s) before requesting another code.`,
-        StatusCode.BAD_REQUEST
-      );
+      if (diff < FIVE_MINUTES) {
+        const remaining = Math.ceil((FIVE_MINUTES - diff) / 1000 / 60);
+        throw new AppError(
+          `Please wait ${remaining} minute(s) before requesting another code.`,
+          StatusCode.BAD_REQUEST
+        );
+      }
     }
-  }
 
-  // 4. Generate a new OTP
-  const otp = this.generateOtp();
+    // 4. Generate a new OTP
+    const otp = this.generateOtp();
 
-  // 5. Send the OTP to the user's email
-  await mailService.sendRestPassword(email, user.username, otp);
+    // 5. Send the OTP to the user's email
+    await mailService.sendRestPassword(email, user.username, otp);
 
-  // 6. Update the user with the new OTP, expiry time, and sent time
-  await user.updateOne({
-    verificationCode: otp,
-    verificationCodeExpires: this.generateExpiryTime(5),
-    otpSentAt: new Date(),
-  });
+    // 6. Update the user with the new OTP, expiry time, and sent time
+    await user.updateOne({
+      verificationCode: otp,
+      verificationCodeExpires: this.generateExpiryTime(5),
+      otpSentAt: new Date(),
+    });
 
-  // 7. Return a success message
-  return { message: "Verification code resent successfully" };
-};
-
-
+    // 7. Return a success message
+    return { message: "Verification code resent successfully" };
+  };
 
   /**
    * Finds a user by email with optional validation message and password selection.
@@ -299,7 +384,6 @@ public resendCode = async (
       );
     return user;
   };
-
 
   /**
    * Generates a future timestamp for OTP expiration.

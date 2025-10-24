@@ -1,7 +1,7 @@
 import z from "zod";
 import { UserGender } from "../../User/user.enum";
 
-export const registerSchema = z.object({
+export const registerClientSchema = z.object({
   body: z.object({
     username: z.string().min(2).max(15),
     email: z.email(),
@@ -23,4 +23,4 @@ export const registerSchema = z.object({
   }),
 });
 
-export type RegisterDto = z.infer<typeof registerSchema>["body"];
+export type RegisterClientDto = z.infer<typeof registerClientSchema>["body"];

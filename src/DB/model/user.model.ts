@@ -98,7 +98,7 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
-    otpSentAt: Date
+    otpSentAt: Date,
   },
   {
     timestamps: true,
@@ -121,6 +121,7 @@ userSchema.methods.comparePassword = async function (
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
 userSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate() as any;
   if (update.password) {

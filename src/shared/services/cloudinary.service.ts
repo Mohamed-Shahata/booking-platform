@@ -17,7 +17,7 @@ class CloudinaryService {
     } catch (err) {
       if (filePath) fs.unlinkSync(filePath);
       console.log(err);
-      throw new AppError("Image upload faild", StatusCode.BAD_REQUEST);
+      throw new AppError("file upload faild", StatusCode.BAD_REQUEST);
     }
   }
 
@@ -26,6 +26,35 @@ class CloudinaryService {
       await cloudinary.uploader.destroy(publicId);
     } catch (err) {
       throw new AppError("Image deletion faild", StatusCode.BAD_REQUEST);
+    }
+  }
+
+  static async uploadStreamFile(fileBuffer: Buffer, folder = "cv") {
+    try {
+      const result = await new Promise<{ url: string; publicId: string }>(
+        (resolve, reject) => {
+          const upload = cloudinary.uploader.upload_stream(
+            { folder },
+            (error, result) => {
+              if (error || !result) {
+                reject(
+                  new AppError("File upload failed", StatusCode.BAD_REQUEST)
+                );
+              }
+
+              resolve({
+                url: result?.secure_url!,
+                publicId: result?.public_id!,
+              });
+            }
+          );
+          upload.end(fileBuffer);
+        }
+      );
+      return result;
+    } catch (err) {
+      console.error(err);
+      throw new AppError("Stream upload failed", StatusCode.BAD_REQUEST);
     }
   }
 }

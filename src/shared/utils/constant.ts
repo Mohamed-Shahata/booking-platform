@@ -15,6 +15,7 @@ export const Environment = {
 
 export const CloudinaryFolders = {
   AVATARS: "avatars",
+  CVS: "cvs",
 };
 
 export const UserError = {

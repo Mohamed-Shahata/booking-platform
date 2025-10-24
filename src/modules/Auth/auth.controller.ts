@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import sendResponse from "../../shared/utils/sendResponse";
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AuthService from "./auth.service";
+import AppError from "../../shared/errors/app.error";
 
 class AuthController {
   private authService: AuthService;
@@ -22,9 +23,32 @@ class AuthController {
    *  gender: "male"
    * }
    */
-  public register = async (req: Request, res: Response) => {
+  public registerClient = async (req: Request, res: Response) => {
     const dto = req.body;
-    const { message } = await this.authService.register(dto);
+    const { message } = await this.authService.registerClient(dto);
+    sendResponse(res, StatusCode.OK, { success: true, data: { message } });
+  };
+
+  /**
+   * dto is => Validation data is {username, email, password, gender}
+   * POST ~/auth/register
+   *
+   * example
+   * {
+   *  username: "ex_username",
+   *  email: "ex_email@gmail.com",
+   *  password: "ex_password123",
+   *  gender: "male"
+   * }
+   */
+  public registerExpert = async (req: Request, res: Response) => {
+    const dto = req.body;
+
+    const cvFile = req.file;
+    if (!cvFile)
+      throw new AppError("no cv file uploaded", StatusCode.BAD_REQUEST);
+
+    const { message } = await this.authService.registerExpert(dto, cvFile);
     sendResponse(res, StatusCode.OK, { success: true, data: { message } });
   };
 
