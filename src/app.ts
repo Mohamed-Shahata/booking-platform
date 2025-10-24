@@ -1,11 +1,16 @@
 import e from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import AuthRouter from "./modules/Auth/auth.route";
 import errorHandler from "./shared/middlewares/errorHandler.middleware";
 import UserRouter from "./modules/User/user.route";
 import "./jobs/deleteExpiredUser.job";
 import ExpertRouter from "./modules/ExpertProfile/expertProfile.route";
+import { corsOptions } from "./config/corsOptions.config";
 const app = e();
+
+// CORS Configuration
+app.use(cors(corsOptions));
 
 // init Routes
 const authRoutes = new AuthRouter();
