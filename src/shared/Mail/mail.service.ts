@@ -1,31 +1,32 @@
-import { createTransport } from "nodemailer";
 import { getVreficationTemplate } from "./mail.templates";
 import { config } from "dotenv";
-import { Environment, SubjectMail } from "../utils/constant";
+import { SubjectMail } from "../utils/constant";
+import { Resend } from "resend";
+import AppError from "../errors/app.error";
+import { StatusCode } from "../enums/statusCode.enum";
 config();
 
 class MailService {
-  private transport;
+  private resend: Resend;
 
   constructor() {
-    this.transport = createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.NODE_ENV === Environment.PRODUCTION ? true : false,
-      auth: {
-        user: process.env.SMTP_USERNAME,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   private sendMail = async (to: string, subject: string, html: string) => {
-    return await this.transport.sendMail({
-      from: `"My App" <${process.env.SMTP_USERNAME}>`,
-      to,
-      subject,
-      html,
-    });
+    try {
+      const res = this.resend.emails.send({
+        from: process.env.SMTP_USERNAME!,
+        to,
+        subject,
+        html,
+      });
+      console.log("send enmail success");
+      return res;
+    } catch (err) {
+      console.log("failed send email: ", err);
+      throw new AppError("Failed send email", StatusCode.BAD_REQUEST);
+    }
   };
 
   public sendVreficationEmail = (to: string, name: string, code: string) => {
