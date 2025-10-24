@@ -37,7 +37,7 @@ class UserService {
     const skip = (pageNumber - 1) * limitNumber;
 
     const users = await User.find({ isVerified: true })
-      .select("+username +email +image +gender +phone")
+      .select("username email image gender phone")
       .limit(limitNumber)
       .skip(skip)
       .exec();
@@ -55,27 +55,29 @@ class UserService {
    * @param bodyDto - The data to update
    * @returns The updated user document
    */
-public update = async (
-  id: Types.ObjectId,
-  bodyDto: UpdateUserDto
-): Promise<IUser> => {
-  const user = await User.findById(id);
-  if (!user)
-    throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
-//Update shared data 
-  const updatedUser = await User.findByIdAndUpdate(id, { $set: bodyDto }, { new: true });
-
-//  If the user is an expert, we update the ExpertProfile with the same data.
-  if (user.role === UserRoles.EXPERT) {
-    await ExpertProfile.findOneAndUpdate(
-      { userId: user._id },
+  public update = async (
+    id: Types.ObjectId,
+    bodyDto: UpdateUserDto
+  ): Promise<IUser> => {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
       { $set: bodyDto },
       { new: true }
     );
-  }
 
-  return updatedUser!;
-};
+    if (!updatedUser)
+      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+
+    if (updatedUser.role === UserRoles.EXPERT) {
+      await ExpertProfile.findOneAndUpdate(
+        { userId: id },
+        { $set: bodyDto },
+        { new: true }
+      );
+    }
+
+    return updatedUser;
+  };
 
   /**
    * Soft delete user account by ID
@@ -88,12 +90,13 @@ public update = async (
    * @returns A message about the scheduled deletion
    */
   public delete = async (id: Types.ObjectId): Promise<{ message: string }> => {
-    const user = await User.findByIdAndUpdate(id, {
-      $set: { isDeleted: Date.now()},
-      
-    }
-    ,{new:true}
-  );
+    const user = await User.findByIdAndUpdate(
+      id,
+      {
+        $set: { isDeleted: Date.now() },
+      },
+      { new: true }
+    );
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return {

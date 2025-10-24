@@ -72,7 +72,7 @@ class UserService {
             const limitNumber = limit ? parseInt(limit) : 20;
             const skip = (pageNumber - 1) * limitNumber;
             const users = yield user_model_1.default.find({ isVerified: true })
-                .select("+username +email +image +gender +phone")
+                .select("username email image gender phone")
                 .limit(limitNumber)
                 .skip(skip)
                 .exec();
@@ -89,14 +89,11 @@ class UserService {
          * @returns The updated user document
          */
         this.update = (id, bodyDto) => __awaiter(this, void 0, void 0, function* () {
-            const user = yield user_model_1.default.findById(id);
-            if (!user)
-                throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
-            //Update shared data 
             const updatedUser = yield user_model_1.default.findByIdAndUpdate(id, { $set: bodyDto }, { new: true });
-            //  If the user is an expert, we update the ExpertProfile with the same data.
-            if (user.role === UserRoles_enum_1.UserRoles.EXPERT) {
-                yield expertProfile_model_1.default.findOneAndUpdate({ userId: user._id }, { $set: bodyDto }, { new: true });
+            if (!updatedUser)
+                throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
+            if (updatedUser.role === UserRoles_enum_1.UserRoles.EXPERT) {
+                yield expertProfile_model_1.default.findOneAndUpdate({ userId: id }, { $set: bodyDto }, { new: true });
             }
             return updatedUser;
         });
