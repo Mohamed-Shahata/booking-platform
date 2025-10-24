@@ -1,9 +1,17 @@
 import z from "zod";
+import { Types } from "mongoose";
 import { UserGender } from "../user.enum";
+import { ExpertSpecialty } from "../../ExpertProfile/expertProfile.enum";
 
+/**
+ * Unified schema for updating both User and ExpertProfile
+ * (works for both Client and Expert users)
+ */
 export const updateUserSchema = z.object({
   body: z.object({
+    // ---------- USER FIELDS ----------
     username: z.string().min(2).max(15).optional(),
+
     phone: z
       .string()
       .regex(
@@ -11,8 +19,34 @@ export const updateUserSchema = z.object({
         "Phone number must be a valid Egyptian mobile or landline number"
       )
       .optional(),
+
     gender: z
       .enum([UserGender.MALE, UserGender.FEMALE, UserGender.OTHER])
+      .optional(),
+
+    // ---------- EXPERT FIELDS ----------
+    userId: z
+      .string()
+      .refine((val) => Types.ObjectId.isValid(val), {
+        message: "Invalid userId",
+      })
+      .optional(),
+
+    specialty: z.nativeEnum(ExpertSpecialty).optional(),
+
+    yearsOfExperience: z.number().min(2).optional(),
+
+    aboutYou: z.string().optional(),
+
+    bio: z.string().optional(),
+
+    rateing: z.number().optional(),
+
+    cv: z
+      .object({
+        fileName: z.string().optional(),
+        fileUrl: z.string().optional(),
+      })
       .optional(),
   }),
 });

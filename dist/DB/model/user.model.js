@@ -92,14 +92,7 @@ const userSchema = new mongoose_1.Schema({
         enum: UserRoles_enum_1.UserRoles,
         default: UserRoles_enum_1.UserRoles.CLIENT,
     },
-    isDeleted: {
-        type: Boolean,
-        default: false,
-    },
-    deletedAt: {
-        type: Date,
-        default: null,
-    },
+    isDeleted: Date,
     chanageCridentialsTime: {
         type: Date,
         default: null,

@@ -86,14 +86,7 @@ const userSchema = new Schema<IUser>(
       enum: UserRoles,
       default: UserRoles.CLIENT,
     },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    isDeleted: Date,
     chanageCridentialsTime: {
       type: Date,
       default: null,
