@@ -137,13 +137,11 @@ class AuthService {
                 throw new app_error_1.default(constant_1.UserError.USER_ACCOUNT_IS_NOT_VERIFIED, statusCode_enum_1.StatusCode.BAD_REQUEST);
             // check account is deleted or no
             if (user.isDeleted) {
-                const daysSinceDelete = user.deletedAt
-                    ? (Date.now() - user.deletedAt.getTime()) / (1000 * 60 * 60 * 24)
+                const daysSinceDelete = user.isDeleted
+                    ? (Date.now() - user.isDeleted.getTime()) / (1000 * 60 * 60 * 24)
                     : 0;
                 if (daysSinceDelete < 7) {
-                    user.isDeleted = false;
-                    user.deletedAt = null;
-                    yield user.save();
+                    yield user.updateOne({ $unset: { isDeleted: 0 } });
                 }
             }
             const isMatch = yield user.comparePassword(password);

@@ -193,17 +193,13 @@ class AuthService {
 
     // check account is deleted or no
     if (user.isDeleted) {
-      const daysSinceDelete = user.deletedAt
-        ? (Date.now() - user.deletedAt.getTime()) / (1000 * 60 * 60 * 24)
+      const daysSinceDelete = user.isDeleted
+        ? (Date.now() - user.isDeleted.getTime()) / (1000 * 60 * 60 * 24)
         : 0;
-
       if (daysSinceDelete < 7) {
-        user.isDeleted = false;
-        user.deletedAt = null;
-        await user.save();
+    await user.updateOne({$unset:{isDeleted:0}})
       }
     }
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch)
       throw new AppError(

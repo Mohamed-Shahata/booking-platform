@@ -50,6 +50,8 @@ const app_error_1 = __importDefault(require("../../shared/errors/app.error"));
 const constant_1 = require("../../shared/utils/constant");
 const statusCode_enum_1 = require("../../shared/enums/statusCode.enum");
 const cloudinary_service_1 = __importDefault(require("../../shared/services/cloudinary.service"));
+const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
+const expertProfile_model_1 = __importDefault(require("../../DB/model/expertProfile.model"));
 class UserService {
     constructor() {
         /**
@@ -87,10 +89,16 @@ class UserService {
          * @returns The updated user document
          */
         this.update = (id, bodyDto) => __awaiter(this, void 0, void 0, function* () {
-            const user = yield user_model_1.default.findByIdAndUpdate(id, bodyDto, { new: true });
+            const user = yield user_model_1.default.findById(id);
             if (!user)
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
-            return user;
+            //Update shared data 
+            const updatedUser = yield user_model_1.default.findByIdAndUpdate(id, { $set: bodyDto }, { new: true });
+            //  If the user is an expert, we update the ExpertProfile with the same data.
+            if (user.role === UserRoles_enum_1.UserRoles.EXPERT) {
+                yield expertProfile_model_1.default.findOneAndUpdate({ userId: user._id }, { $set: bodyDto }, { new: true });
+            }
+            return updatedUser;
         });
         /**
          * Soft delete user account by ID
@@ -104,8 +112,8 @@ class UserService {
          */
         this.delete = (id) => __awaiter(this, void 0, void 0, function* () {
             const user = yield user_model_1.default.findByIdAndUpdate(id, {
-                $set: { isDeleted: true, deletedAt: new Date() },
-            });
+                $set: { isDeleted: Date.now() },
+            }, { new: true });
             if (!user)
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             return {

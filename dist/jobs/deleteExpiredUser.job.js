@@ -29,8 +29,7 @@ node_cron_1.default.schedule("0 0 * * *", () => __awaiter(void 0, void 0, void 0
             yield cloudinary_service_1.default.deleteImage(user.avatar.publicId);
     })));
     yield user_model_1.default.deleteMany({
-        isDeleted: true,
-        deletedAt: { $lte: sevenDaysAgo },
+        isDeleted: { $lte: sevenDaysAgo },
     });
     console.log("[CRON] Deleted users older than 7 days.");
 }));

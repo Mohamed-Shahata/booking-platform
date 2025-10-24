@@ -20,9 +20,8 @@ cron.schedule("0 0 * * *", async () => {
   );
 
   await User.deleteMany({
-    isDeleted: true,
-    deletedAt: { $lte: sevenDaysAgo },
+    isDeleted: { $lte: sevenDaysAgo },
   });
-
+  
   console.log("[CRON] Deleted users older than 7 days.");
 });

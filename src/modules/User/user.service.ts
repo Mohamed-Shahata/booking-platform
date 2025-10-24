@@ -11,6 +11,8 @@ import {
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import { UpdateUserDto } from "./dto/updateUser.dto";
 import CloudinaryService from "../../shared/services/cloudinary.service";
+import { UserRoles } from "../../shared/enums/UserRoles.enum";
+import ExpertProfile from "../../DB/model/expertProfile.model";
 
 class UserService {
   constructor() {}
@@ -53,16 +55,27 @@ class UserService {
    * @param bodyDto - The data to update
    * @returns The updated user document
    */
-  public update = async (
-    id: Types.ObjectId,
-    bodyDto: UpdateUserDto
-  ): Promise<IUser> => {
-    const user = await User.findByIdAndUpdate(id, bodyDto, { new: true });
+public update = async (
+  id: Types.ObjectId,
+  bodyDto: UpdateUserDto
+): Promise<IUser> => {
+  const user = await User.findById(id);
+  if (!user)
+    throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+//Update shared data 
+  const updatedUser = await User.findByIdAndUpdate(id, { $set: bodyDto }, { new: true });
 
-    if (!user)
-      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
-    return user;
-  };
+//  If the user is an expert, we update the ExpertProfile with the same data.
+  if (user.role === UserRoles.EXPERT) {
+    await ExpertProfile.findOneAndUpdate(
+      { userId: user._id },
+      { $set: bodyDto },
+      { new: true }
+    );
+  }
+
+  return updatedUser!;
+};
 
   /**
    * Soft delete user account by ID
@@ -76,9 +89,11 @@ class UserService {
    */
   public delete = async (id: Types.ObjectId): Promise<{ message: string }> => {
     const user = await User.findByIdAndUpdate(id, {
-      $set: { isDeleted: true, deletedAt: new Date() },
-    });
-
+      $set: { isDeleted: Date.now()},
+      
+    }
+    ,{new:true}
+  );
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return {
