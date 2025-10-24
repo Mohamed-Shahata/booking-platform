@@ -10,7 +10,7 @@ import {
 } from "../../shared/middlewares/auth.middleware";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import { updateUserSchema } from "./dto/updateUser.dto";
-import { upload } from "../../shared/middlewares/multer.middleware";
+import { uploadImage } from "../../shared/middlewares/multer.middleware";
 
 class UserRouter {
   router = Router();
@@ -60,7 +60,7 @@ class UserRouter {
     this.router.post(
       "/upload-avatar",
       auth,
-      upload.single("avatar"),
+      uploadImage.single("avatar"),
       expressAsyncHandler(this.userController.uploadAndUpdateAvatar)
     );
 

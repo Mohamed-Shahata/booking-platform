@@ -3,11 +3,13 @@ import expressAsyncHandler from "express-async-handler";
 import AuthController from "./auth.controller";
 import validate from "../../shared/middlewares/validation.middleware";
 import { verifyEmailSchema } from "./dto/verifyEmail.dto";
-import { registerSchema } from "./dto/register.dto";
+import { registerClientSchema } from "./dto/registerClient.dto";
 import { loginSchema } from "./dto/login.dto";
 import { restPasswordSchema } from "./dto/restPassword.dto";
 import { forgetPasswordSchema } from "./dto/forgetPassword.dto";
 import { resendCodeSchema } from "./dto/resendCode.dto";
+import { registerExpertSchema } from "./dto/registerExpert.dto";
+import { uploadFile } from "../../shared/middlewares/multer.middleware";
 
 class AuthRouter {
   router = Router();
@@ -19,11 +21,18 @@ class AuthRouter {
   }
 
   private initRoutes = () => {
-    // POST ~/auth/register
+    // POST ~/auth/register-client
     this.router.post(
-      "/register",
-      validate(registerSchema),
-      expressAsyncHandler(this.authController.register)
+      "/register-client",
+      validate(registerClientSchema),
+      expressAsyncHandler(this.authController.registerClient)
+    );
+    // POST ~/auth/register-expert
+    this.router.post(
+      "/register-expert",
+      uploadFile.single("cv"),
+      validate(registerExpertSchema),
+      expressAsyncHandler(this.authController.registerExpert)
     );
 
     // POST ~/auth/verify
@@ -52,14 +61,12 @@ class AuthRouter {
       validate(restPasswordSchema),
       expressAsyncHandler(this.authController.restPassword)
     );
-        // patch ~/auth/resendCode
+    // patch ~/auth/resendCode
     this.router.post(
       "/resendCode",
       validate(resendCodeSchema),
       expressAsyncHandler(this.authController.resendCode)
     );
   };
-  
-  
 }
 export default AuthRouter;

@@ -15,7 +15,7 @@ cron.schedule("0 0 * * *", async () => {
   await Promise.all(
     usersToDelete.map(async (user) => {
       if (user.avatar?.publicId)
-        await CloudinaryService.deleteImage(user.avatar.publicId);
+        await CloudinaryService.deleteFile(user.avatar.publicId);
     })
   );
 
