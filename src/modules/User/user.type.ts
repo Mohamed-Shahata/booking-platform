@@ -20,6 +20,7 @@ export interface IUser extends Document {
   resetPasswordToken: string | null;
   resetPasswordExpire: Date | null;
   role: string;
+  provider:string
   isDeleted?:Date;
   otpSentAt?: Date;
   chanageCridentialsTime?: Date | null;

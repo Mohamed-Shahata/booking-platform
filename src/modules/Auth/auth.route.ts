@@ -10,6 +10,7 @@ import { forgetPasswordSchema } from "./dto/forgetPassword.dto";
 import { resendCodeSchema } from "./dto/resendCode.dto";
 import { registerExpertSchema } from "./dto/registerExpert.dto";
 import { uploadFile } from "../../shared/middlewares/multer.middleware";
+import { googleLoginSchema } from "./dto/loginWithGoogle.dto";
 
 class AuthRouter {
   router = Router();
@@ -48,6 +49,13 @@ class AuthRouter {
       validate(loginSchema),
       expressAsyncHandler(this.authController.login)
     );
+    //POST ~/auth/google-login
+this.router.post(
+  "/google-login",
+  validate(googleLoginSchema),
+  this.authController.loginWithGoogle
+);
+
     // patch ~/auth/forgetPassword
 
     this.router.patch(

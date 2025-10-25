@@ -87,6 +87,25 @@ class AuthController {
       success: true,
     });
   };
+    /**
+   * dto is => Validation data is {idToken}
+   * POST ~/auth/google-login
+   *
+   * example
+   * {
+   * "idToken":""
+   * }
+   */
+    public loginWithGoogle = async (req: Request, res: Response) => {
+    const dto = req.body;
+    const { user, accessToken } = await this.authService.loginWithGoogle(dto);
+
+    sendResponse(res, StatusCode.OK, {
+      success: true,
+      data: { user, accessToken },
+    });
+  };
+
   /**
    * dto is => Validation data is {email ,code, password}
    * POST ~/auth/restPassword

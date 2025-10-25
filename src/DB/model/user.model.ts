@@ -3,7 +3,11 @@ import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import bcrypt from "bcryptjs";
 import { IUser } from "../../modules/User/user.type";
 import { UserGender } from "../../modules/User/user.enum";
-
+export const providerTypes = {
+  system: "system",
+  google: "google",
+  facebook: "facebook",
+};
 export const DEFAULT_AVATAR = {
   url: "https://res.cloudinary.com/dihm4riw5/image/upload/v1761192839/user-interface-design-computer-icons-default-png-favpng-A0tt8aVzdqP30RjwFGhjNABpm_h4wjdk.jpg",
   publicId:
@@ -38,12 +42,13 @@ const userSchema = new Schema<IUser>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      minLength: 8,
-      required: true,
-      select: false,
-    },
+ 
+  password: {
+    type: String,
+    required: function (this: IUser) {
+      return this.provider === providerTypes.system;
+    }
+  },
     gender: {
       type: String,
       enum: UserGender,
@@ -55,11 +60,9 @@ const userSchema = new Schema<IUser>(
     },
     phone: {
       type: String,
-      default: null,
     },
     address: {
       type: String,
-      default: null,
     },
     isVerified: {
       type: Boolean,
@@ -67,7 +70,6 @@ const userSchema = new Schema<IUser>(
     },
     verificationCode: {
       type: String,
-      default: null,
     },
     verificationCodeExpires: {
       type: Date,
@@ -78,7 +80,6 @@ const userSchema = new Schema<IUser>(
       default: null,
     },
     resetPasswordExpire: {
-      default: null,
       type: Date,
     },
     role: {
@@ -86,10 +87,14 @@ const userSchema = new Schema<IUser>(
       enum: UserRoles,
       default: UserRoles.CLIENT,
     },
+    provider: {
+      type: String,
+      enum: Object.values(providerTypes),
+      default: providerTypes.system,
+    },
     isDeleted: Date,
     chanageCridentialsTime: {
       type: Date,
-      default: null,
     },
     otpSentAt: Date,
   },
