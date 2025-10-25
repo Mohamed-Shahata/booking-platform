@@ -89,6 +89,23 @@ class AuthController {
             });
         });
         /**
+       * dto is => Validation data is {idToken}
+       * POST ~/auth/google-login
+       *
+       * example
+       * {
+       * "idToken":""
+       * }
+       */
+        this.loginWithGoogle = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const dto = req.body;
+            const { user, accessToken } = yield this.authService.loginWithGoogle(dto);
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, {
+                success: true,
+                data: { user, accessToken },
+            });
+        });
+        /**
          * dto is => Validation data is {email ,code, password}
          * POST ~/auth/restPassword
          *

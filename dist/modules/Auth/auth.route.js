@@ -15,6 +15,7 @@ const forgetPassword_dto_1 = require("./dto/forgetPassword.dto");
 const resendCode_dto_1 = require("./dto/resendCode.dto");
 const registerExpert_dto_1 = require("./dto/registerExpert.dto");
 const multer_middleware_1 = require("../../shared/middlewares/multer.middleware");
+const loginWithGoogle_dto_1 = require("./dto/loginWithGoogle.dto");
 class AuthRouter {
     constructor() {
         this.router = (0, express_1.Router)();
@@ -27,6 +28,8 @@ class AuthRouter {
             this.router.post("/verify", (0, validation_middleware_1.default)(verifyEmail_dto_1.verifyEmailSchema), (0, express_async_handler_1.default)(this.authController.verifyEmail));
             // POST ~/auth/login
             this.router.post("/login", (0, validation_middleware_1.default)(login_dto_1.loginSchema), (0, express_async_handler_1.default)(this.authController.login));
+            //POST ~/auth/google-login
+            this.router.post("/google-login", (0, validation_middleware_1.default)(loginWithGoogle_dto_1.googleLoginSchema), this.authController.loginWithGoogle);
             // patch ~/auth/forgetPassword
             this.router.patch("/forgetPassword", (0, validation_middleware_1.default)(forgetPassword_dto_1.forgetPasswordSchema), (0, express_async_handler_1.default)(this.authController.forgetPassword));
             // patch ~/auth/restPassword

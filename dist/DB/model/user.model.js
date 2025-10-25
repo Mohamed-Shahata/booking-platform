@@ -12,11 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_AVATAR = void 0;
+exports.DEFAULT_AVATAR = exports.providerTypes = void 0;
 const mongoose_1 = require("mongoose");
 const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const user_enum_1 = require("../../modules/User/user.enum");
+exports.providerTypes = {
+    system: "system",
+    google: "google",
+    facebook: "facebook",
+};
 exports.DEFAULT_AVATAR = {
     url: "https://res.cloudinary.com/dihm4riw5/image/upload/v1761192839/user-interface-design-computer-icons-default-png-favpng-A0tt8aVzdqP30RjwFGhjNABpm_h4wjdk.jpg",
     publicId: "user-interface-design-computer-icons-default-png-favpng-A0tt8aVzdqP30RjwFGhjNABpm_h4wjdk",
@@ -46,9 +51,9 @@ const userSchema = new mongoose_1.Schema({
     },
     password: {
         type: String,
-        minLength: 8,
-        required: true,
-        select: false,
+        required: function () {
+            return this.provider === exports.providerTypes.system;
+        }
     },
     gender: {
         type: String,
@@ -61,11 +66,9 @@ const userSchema = new mongoose_1.Schema({
     },
     phone: {
         type: String,
-        default: null,
     },
     address: {
         type: String,
-        default: null,
     },
     isVerified: {
         type: Boolean,
@@ -73,7 +76,6 @@ const userSchema = new mongoose_1.Schema({
     },
     verificationCode: {
         type: String,
-        default: null,
     },
     verificationCodeExpires: {
         type: Date,
@@ -84,7 +86,6 @@ const userSchema = new mongoose_1.Schema({
         default: null,
     },
     resetPasswordExpire: {
-        default: null,
         type: Date,
     },
     role: {
@@ -92,10 +93,14 @@ const userSchema = new mongoose_1.Schema({
         enum: UserRoles_enum_1.UserRoles,
         default: UserRoles_enum_1.UserRoles.CLIENT,
     },
+    provider: {
+        type: String,
+        enum: Object.values(exports.providerTypes),
+        default: exports.providerTypes.system,
+    },
     isDeleted: Date,
     chanageCridentialsTime: {
         type: Date,
-        default: null,
     },
     otpSentAt: Date,
 }, {

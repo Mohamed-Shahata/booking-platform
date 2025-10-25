@@ -1,4 +1,4 @@
-import User from "../../DB/model/user.model";
+import User, { providerTypes } from "../../DB/model/user.model";
 import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AppError from "../../shared/errors/app.error";
 import {
@@ -19,6 +19,8 @@ import { RegisterExpertDto } from "./dto/registerExpert.dto";
 import ExpertProfile from "../../DB/model/expertProfile.model";
 import CloudinaryService from "../../shared/services/cloudinary.service";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
+import { GoogleLoginDto } from "./dto/loginWithGoogle.dto";
+import { OAuth2Client } from "google-auth-library";
 
 class AuthService {
   /**
@@ -167,15 +169,71 @@ class AuthService {
 
     return { message: "User created successfully" };
   };
-
   /**
+   * Authenticates a user using a Google ID token.
+   * If the token is valid and the user exists (or is created),
+   * returns the user data along with a newly generated access token.
+   *
+   * @param idToken - The Google ID token obtained from the client-side Google authentication
+   * @returns The authenticated user and generated access token
+   *
+   * @throws {AppError} If the Google token is invalid, the email is unverified,
+   *                    or the provider type doesn't match
+   */
+public loginWithGoogle = async (
+    idToken: string
+  ): Promise<{ user: IUser; accessToken: string }> => {
+    // ✅ Verify token from Google
+    const ticket = await this.client.verifyIdToken({
+      idToken,
+      audience: process.env.WEB_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw new AppError("Invalid Google token", StatusCode.BAD_REQUEST);
+    }
+
+    const { email, name, picture, email_verified } = payload;
+
+    if (!email_verified) {
+      throw new AppError("Google account not verified", StatusCode.BAD_REQUEST);
+    }
+
+    // ✅ Check if user exists
+    let user = await User.findOne({ email });
+
+    // 🧩 Create user if doesn't exist
+    if (!user) {
+      user = await User.create({
+        userName: name,
+        email,
+        image: picture,
+        provider: providerTypes.google,
+        isVerified: true,
+      });
+    }
+
+    // ⚠️ Validate provider
+    if (user.provider !== providerTypes.google) {
+      throw new AppError("Invalid provider for this email", StatusCode.BAD_REQUEST);
+    }
+
+    // 🪪 Generate Access Token
+    const accessToken = generateAccessToken({ id: user._id, role: user.role });
+
+    // ✅ Return user and token
+    return { user, accessToken };
+  };
+
+    /**
    * Authenticates a user by validating email and password.
    * If successful, returns the user data along with an access token.
    *
    * @param dto - Login credentials (email and password)
    * @returns Authenticated user and generated access token
    */
-  public login = async (
+ public login = async (
     dto: LoginDto
   ): Promise<{ user: IUser; accessToken: string }> => {
     const { email, password } = dto;
@@ -219,6 +277,7 @@ class AuthService {
    * @param dto - Email verification
    * @returns A success message upon successful send code
    */
+  
   public forgetPassword = async (
     dto: forgetPasswordDto
   ): Promise<{ message: string }> => {
@@ -397,7 +456,9 @@ class AuthService {
    */
   private generateOtp = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
+      
   };
+  private client = new OAuth2Client(process.env.WEB_CLIENT_ID!);
 }
 
 export default AuthService;

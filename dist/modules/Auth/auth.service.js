@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12,7 +45,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_model_1 = __importDefault(require("../../DB/model/user.model"));
+const user_model_1 = __importStar(require("../../DB/model/user.model"));
 const statusCode_enum_1 = require("../../shared/enums/statusCode.enum");
 const app_error_1 = __importDefault(require("../../shared/errors/app.error"));
 const constant_1 = require("../../shared/utils/constant");
@@ -21,6 +54,7 @@ const mail_service_1 = __importDefault(require("../../shared/Mail/mail.service")
 const expertProfile_model_1 = __importDefault(require("../../DB/model/expertProfile.model"));
 const cloudinary_service_1 = __importDefault(require("../../shared/services/cloudinary.service"));
 const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
+const google_auth_library_1 = require("google-auth-library");
 class AuthService {
     constructor() {
         /**
@@ -124,12 +158,58 @@ class AuthService {
             return { message: "User created successfully" };
         });
         /**
-         * Authenticates a user by validating email and password.
-         * If successful, returns the user data along with an access token.
+         * Authenticates a user using a Google ID token.
+         * If the token is valid and the user exists (or is created),
+         * returns the user data along with a newly generated access token.
          *
-         * @param dto - Login credentials (email and password)
-         * @returns Authenticated user and generated access token
+         * @param idToken - The Google ID token obtained from the client-side Google authentication
+         * @returns The authenticated user and generated access token
+         *
+         * @throws {AppError} If the Google token is invalid, the email is unverified,
+         *                    or the provider type doesn't match
          */
+        this.loginWithGoogle = (idToken) => __awaiter(this, void 0, void 0, function* () {
+            // ✅ Verify token from Google
+            const ticket = yield this.client.verifyIdToken({
+                idToken,
+                audience: process.env.WEB_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            if (!payload) {
+                throw new app_error_1.default("Invalid Google token", statusCode_enum_1.StatusCode.BAD_REQUEST);
+            }
+            const { email, name, picture, email_verified } = payload;
+            if (!email_verified) {
+                throw new app_error_1.default("Google account not verified", statusCode_enum_1.StatusCode.BAD_REQUEST);
+            }
+            // ✅ Check if user exists
+            let user = yield user_model_1.default.findOne({ email });
+            // 🧩 Create user if doesn't exist
+            if (!user) {
+                user = yield user_model_1.default.create({
+                    userName: name,
+                    email,
+                    image: picture,
+                    provider: user_model_1.providerTypes.google,
+                    isVerified: true,
+                });
+            }
+            // ⚠️ Validate provider
+            if (user.provider !== user_model_1.providerTypes.google) {
+                throw new app_error_1.default("Invalid provider for this email", statusCode_enum_1.StatusCode.BAD_REQUEST);
+            }
+            // 🪪 Generate Access Token
+            const accessToken = (0, generateTokens_1.generateAccessToken)({ id: user._id, role: user.role });
+            // ✅ Return user and token
+            return { user, accessToken };
+        });
+        /**
+       * Authenticates a user by validating email and password.
+       * If successful, returns the user data along with an access token.
+       *
+       * @param dto - Login credentials (email and password)
+       * @returns Authenticated user and generated access token
+       */
         this.login = (dto) => __awaiter(this, void 0, void 0, function* () {
             const { email, password } = dto;
             const user = yield this.findUserByEmail(email, constant_1.ValidationError.EMAIL_OR_PASSWORD_IS_WRONG, true);
@@ -286,6 +366,7 @@ class AuthService {
         this.generateOtp = () => {
             return Math.floor(100000 + Math.random() * 900000).toString();
         };
+        this.client = new google_auth_library_1.OAuth2Client(process.env.WEB_CLIENT_ID);
     }
 }
 exports.default = AuthService;
