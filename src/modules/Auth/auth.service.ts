@@ -183,7 +183,7 @@ class AuthService {
 public loginWithGoogle = async (
     idToken: string
   ): Promise<{ user: IUser; accessToken: string }> => {
-    // ✅ Verify token from Google
+    // Verify token from Google
     const ticket = await this.client.verifyIdToken({
       idToken,
       audience: process.env.WEB_CLIENT_ID,
@@ -200,15 +200,15 @@ public loginWithGoogle = async (
       throw new AppError("Google account not verified", StatusCode.BAD_REQUEST);
     }
 
-    // ✅ Check if user exists
+    //  Check if user exists
     let user = await User.findOne({ email });
 
-    // 🧩 Create user if doesn't exist
+    //  Create user if doesn't exist
     if (!user) {
       user = await User.create({
         userName: name,
         email,
-        image: picture,
+        avatar: picture,
         provider: providerTypes.google,
         isVerified: true,
       });
