@@ -1,4 +1,3 @@
-````markdown
 # Booking Platform
 
 ## Overview
@@ -30,7 +29,7 @@ The Booking Platform is a real-time appointment and consultation booking system 
    ```bash
    git clone <repository-url>
    cd Booking-platform
-````
+
 
 2. Install dependencies:
 
@@ -153,3 +152,4 @@ This project is licensed under the MIT License. See the `package.json` for detai
 booking, appointment, schedule, backend, nodejs, express, api, payment, stripe, paypal, reservation, user-auth, calendar, meeting, session, حجز, مواعيد, جلسات, نظام حجز
 
 ```
+
