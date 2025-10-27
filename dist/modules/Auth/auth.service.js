@@ -124,7 +124,7 @@ class AuthService {
                 },
             });
             // send otp to user email
-            yield mail_service_1.default.sendVreficationEmail(email, username, otp);
+            mail_service_1.default.sendVreficationEmail(email, username, otp);
             return {
                 message: "We sent a new otp of your email, check your email please",
             };

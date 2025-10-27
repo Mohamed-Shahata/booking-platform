@@ -46,9 +46,9 @@ class UserService {
   };
 
     public getAllExpert = async (dto: GetAllExpertDto): Promise<Array<IExpertProfile>> => {
-    const { page, limit ,filter} = dto;
+    const { page, limit ,filter,rate} = dto;
   const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
-    const expert = await ExpertProfile.find({ isVerified: true,specialty:filter})
+    const expert = await ExpertProfile.find({ isVerified: true,specialty:filter,rateing:rate})
       .select("specialty yearsOfExperience bio rateing")
       .limit(limitNumber)
       .skip(skip)

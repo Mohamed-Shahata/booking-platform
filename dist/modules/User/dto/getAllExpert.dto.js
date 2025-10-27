@@ -17,6 +17,13 @@ exports.getAllExpertSchema = zod_1.default.object({
             .default(expertProfile_enum_1.ExpertSpecialty.MEDICAL)
             .optional(),
         page: zod_1.default.string().optional(),
+        rate: zod_1.default
+            .number({
+            error: "Rate must be a number",
+        })
+            .min(1, "Rate must be at least 1")
+            .max(5, "Rate cannot be more than 5")
+            .optional(),
         limit: zod_1.default.string().optional(),
     }),
 });

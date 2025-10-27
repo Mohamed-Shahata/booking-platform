@@ -121,7 +121,7 @@ class AuthService {
     });
 
     // send otp to user email
-    await mailService.sendVreficationEmail(email, username, otp);
+     mailService.sendVreficationEmail(email, username, otp);
 
     return {
       message: "We sent a new otp of your email, check your email please",
