@@ -27,6 +27,18 @@ class UserController {
       message: UserSuccess.GET_ALL_USERS_DONE,
     });
   };
+    // GET ~/expert?page=1&limit=20
+  public gelAllExperts = async (req: Request, res: Response) => {
+    const dto = req.query;
+
+    const users = await this.userService.getAllExpert(dto);
+
+    sendResponse(res, StatusCode.OK, {
+      data: users,
+      success: true,
+      message: UserSuccess.GET_ALL_EXPERT_DONE,
+    });
+  };
 
   /**
    * dto is => Validation data is {username, phone, gender}

@@ -13,6 +13,8 @@ import { UpdateUserDto } from "./dto/updateUser.dto";
 import CloudinaryService from "../../shared/services/cloudinary.service";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import ExpertProfile from "../../DB/model/expertProfile.model";
+import { GetAllExpertDto } from "./dto/getAllExpert.dto";
+import { IExpertProfile } from "./expertProfile.type";
 
 class UserService {
   constructor() {}
@@ -31,18 +33,28 @@ class UserService {
    */
   public getAllUsers = async (dto: GetAllUserDto): Promise<Array<IUser>> => {
     const { page, limit } = dto;
+  const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
 
-    const pageNumber = page ? parseInt(page) : 1;
-    const limitNumber = limit ? parseInt(limit) : 20;
-    const skip = (pageNumber - 1) * limitNumber;
 
-    const users = await User.find({ isVerified: true })
+    const users = await User.find({ isVerified: true})
       .select("username email image gender phone")
       .limit(limitNumber)
       .skip(skip)
       .exec();
 
     return users;
+  };
+
+    public getAllExpert = async (dto: GetAllExpertDto): Promise<Array<IExpertProfile>> => {
+    const { page, limit ,filter} = dto;
+  const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
+    const expert = await ExpertProfile.find({ isVerified: true,specialty:filter})
+      .select("specialty yearsOfExperience bio rateing")
+      .limit(limitNumber)
+      .skip(skip)
+      .exec();
+
+    return expert;
   };
 
   /**
@@ -216,5 +228,13 @@ class UserService {
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return user;
   };
+private getPagination = (page?: string, limit?: string) => {
+  const pageNumber = page ? parseInt(page) : 1;
+  const limitNumber = limit ? parseInt(limit) : 20;
+  const skip = (pageNumber - 1) * limitNumber;
+
+  return { pageNumber, limitNumber, skip };
+};
+
 }
 export default UserService;

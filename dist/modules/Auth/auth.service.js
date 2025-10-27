@@ -169,7 +169,7 @@ class AuthService {
          *                    or the provider type doesn't match
          */
         this.loginWithGoogle = (idToken) => __awaiter(this, void 0, void 0, function* () {
-            // ✅ Verify token from Google
+            // Verify token from Google
             const ticket = yield this.client.verifyIdToken({
                 idToken,
                 audience: process.env.WEB_CLIENT_ID,
@@ -182,14 +182,14 @@ class AuthService {
             if (!email_verified) {
                 throw new app_error_1.default("Google account not verified", statusCode_enum_1.StatusCode.BAD_REQUEST);
             }
-            // ✅ Check if user exists
+            //  Check if user exists
             let user = yield user_model_1.default.findOne({ email });
-            // 🧩 Create user if doesn't exist
+            //  Create user if doesn't exist
             if (!user) {
                 user = yield user_model_1.default.create({
                     userName: name,
                     email,
-                    image: picture,
+                    avatar: picture,
                     provider: user_model_1.providerTypes.google,
                     isVerified: true,
                 });

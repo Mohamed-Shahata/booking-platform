@@ -7,7 +7,7 @@ exports.updateUserSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 const mongoose_1 = require("mongoose");
 const user_enum_1 = require("../user.enum");
-const expertProfile_enum_1 = require("../../ExpertProfile/expertProfile.enum");
+const expertProfile_enum_1 = require("../../../shared/enums/expertProfile.enum");
 /**
  * Unified schema for updating both User and ExpertProfile
  * (works for both Client and Expert users)

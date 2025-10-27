@@ -68,15 +68,23 @@ class UserService {
          */
         this.getAllUsers = (dto) => __awaiter(this, void 0, void 0, function* () {
             const { page, limit } = dto;
-            const pageNumber = page ? parseInt(page) : 1;
-            const limitNumber = limit ? parseInt(limit) : 20;
-            const skip = (pageNumber - 1) * limitNumber;
+            const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
             const users = yield user_model_1.default.find({ isVerified: true })
                 .select("username email image gender phone")
                 .limit(limitNumber)
                 .skip(skip)
                 .exec();
             return users;
+        });
+        this.getAllExpert = (dto) => __awaiter(this, void 0, void 0, function* () {
+            const { page, limit, filter } = dto;
+            const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
+            const expert = yield expertProfile_model_1.default.find({ isVerified: true, specialty: filter })
+                .select("specialty yearsOfExperience bio rateing")
+                .limit(limitNumber)
+                .skip(skip)
+                .exec();
+            return expert;
         });
         /**
          * Update user data by ID
@@ -202,6 +210,12 @@ class UserService {
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             return user;
         });
+        this.getPagination = (page, limit) => {
+            const pageNumber = page ? parseInt(page) : 1;
+            const limitNumber = limit ? parseInt(limit) : 20;
+            const skip = (pageNumber - 1) * limitNumber;
+            return { pageNumber, limitNumber, skip };
+        };
     }
 }
 exports.default = UserService;

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerExpertSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
-const expertProfile_enum_1 = require("../../ExpertProfile/expertProfile.enum");
+const expertProfile_enum_1 = require("../../../shared/enums/expertProfile.enum");
 const user_enum_1 = require("../../User/user.enum");
 exports.registerExpertSchema = zod_1.default.object({
     body: zod_1.default.object({

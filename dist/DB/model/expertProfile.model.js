@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-const expertProfile_enum_1 = require("../../modules/ExpertProfile/expertProfile.enum");
+const expertProfile_enum_1 = require("../../shared/enums/expertProfile.enum");
 const cvShema = new mongoose_1.Schema({
     url: {
         type: String,
