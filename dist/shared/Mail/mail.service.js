@@ -45,6 +45,14 @@ class MailService {
             const html = (0, mail_templates_1.getVreficationTemplate)(name, code);
             return this.sendMail(to, constant_1.SubjectMail.REST_PASSWORD, html);
         };
+        this.verifyAcceptEmail = (to, name) => {
+            const html = (0, mail_templates_1.verifyAcceptTemplate)(name);
+            return this.sendMail(to, constant_1.SubjectMail.ACCEPT_EMAIL, html);
+        };
+        this.verifyRejectEmail = (to, name) => {
+            const html = (0, mail_templates_1.verifyRejectTemplate)(name);
+            return this.sendMail(to, constant_1.SubjectMail.REJECT_EMAIL, html);
+        };
         this.resend = new resend_1.Resend(process.env.RESEND_API_KEY);
     }
 }

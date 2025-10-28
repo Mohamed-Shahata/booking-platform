@@ -8,7 +8,7 @@ const zod_1 = __importDefault(require("zod"));
 const expertProfile_enum_1 = require("../../../shared/enums/expertProfile.enum");
 exports.getAllExpertSchema = zod_1.default.object({
     query: zod_1.default.object({
-        filter: zod_1.default
+        specialty: zod_1.default
             .enum([
             expertProfile_enum_1.ExpertSpecialty.BUSINESS,
             expertProfile_enum_1.ExpertSpecialty.IT,
@@ -16,6 +16,7 @@ exports.getAllExpertSchema = zod_1.default.object({
         ])
             .default(expertProfile_enum_1.ExpertSpecialty.MEDICAL)
             .optional(),
+        yearsOfExperience: zod_1.default.number().min(2).optional(),
         page: zod_1.default.string().optional(),
         rate: zod_1.default
             .number({

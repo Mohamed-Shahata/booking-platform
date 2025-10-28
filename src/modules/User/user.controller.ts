@@ -101,6 +101,28 @@ class UserController {
       message: "Done",
     });
   };
+    // patch ~/users/accept/:userId
+  public acceptRequest = async (req: CustomRequest, res: Response) => {
+    const userId = new Types.ObjectId(req.params.userId);
+    const user = await this.userService.acceptRequest(userId);
+    sendResponse(res, StatusCode.OK, {
+      data: { user },
+      success: true,
+      message: "Done",
+    });
+  };
+    // patch ~/users/reject/:userId
+public rejectRequest = async (req: CustomRequest, res: Response) => {
+  const userId = new Types.ObjectId(req.params.userId);
+
+  const result = await this.userService.rejectRequest(userId);
+
+  sendResponse(res, StatusCode.OK, {
+    data: { result },
+    success: true,
+    message: "Rejected Successfully",
+  });
+};
 
   // POST ~/users/update-cv
   public updateCv = async (req: CustomRequest, res: Response) => {

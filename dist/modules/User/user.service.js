@@ -52,6 +52,7 @@ const statusCode_enum_1 = require("../../shared/enums/statusCode.enum");
 const cloudinary_service_1 = __importDefault(require("../../shared/services/cloudinary.service"));
 const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
 const expertProfile_model_1 = __importDefault(require("../../DB/model/expertProfile.model"));
+const mail_service_1 = __importDefault(require("../../shared/Mail/mail.service"));
 class UserService {
     constructor() {
         /**
@@ -68,23 +69,41 @@ class UserService {
          */
         this.getAllUsers = (dto) => __awaiter(this, void 0, void 0, function* () {
             const { page, limit } = dto;
-            const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
+            const { limitNumber, skip } = this.getPagination(page, limit);
             const users = yield user_model_1.default.find({ isVerified: true })
-                .select("username email image gender phone")
+                .select("username email avatar gender phone")
                 .limit(limitNumber)
                 .skip(skip)
                 .exec();
             return users;
         });
+        /**
+           * Get all experts with optional filters and pagination (for Flutter)
+           *
+           * Retrieves a paginated list of experts filtered by specialty, rate, and years of experience.
+           * Populates the `userId` field to include basic user data (username, avatar).
+           *
+           * @param dto - The filter and pagination data (page, limit, specialty, rate, yearsOfExperience)
+           * @returns A list of expert profiles matching the provided filters
+           *
+           * Example:
+           *  page = 1, limit = 10, specialty = "Cardiology", rate = 4.5
+           *  → returns up to 10 cardiologists with a 4.5 rating or higher
+           */
         this.getAllExpert = (dto) => __awaiter(this, void 0, void 0, function* () {
-            const { page, limit, filter, rate } = dto;
-            const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
-            const expert = yield expertProfile_model_1.default.find({ isVerified: true, specialty: filter, rateing: rate })
+            const { page, limit, specialty, rate, yearsOfExperience } = dto;
+            const { limitNumber, skip } = this.getPagination(page, limit);
+            const experts = yield expertProfile_model_1.default.find({
+                yearsOfExperience,
+                specialty,
+                rateing: rate,
+            })
+                .populate("userId", "username avatar")
                 .select("specialty yearsOfExperience bio rateing")
                 .limit(limitNumber)
                 .skip(skip)
                 .exec();
-            return expert;
+            return experts;
         });
         /**
          * Update user data by ID
@@ -146,6 +165,56 @@ class UserService {
             return user;
         });
         /**
+       * Accept a user's verification request
+       *
+       * Updates the specified user's account by setting `isVerified` to true.
+       *
+       * @param userId - The ObjectId of the user to verify
+       * @returns A success message if the user was updated
+       */
+        this.acceptRequest = (userId) => __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_model_1.default.findOneAndUpdate({ _id: userId }, { $set: { isVerified: true } }, { new: true });
+            if (!user) {
+                throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
+            }
+            yield mail_service_1.default.verifyAcceptEmail(user.email, user.username);
+            return { message: "Accepted Successfully" };
+        });
+        /**
+       * Reject a user's verification request
+       *
+       * Sends a rejection email to the user, deletes their expert profile,
+       * and removes their account from the database.
+       *
+       * @param userId - The ObjectId of the user to reject
+       * @returns A success message after rejection and cleanup
+       */
+        this.rejectRequest = (userId) => __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_model_1.default.findById(userId);
+            if (!user) {
+                throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
+            }
+            const expertProfile = yield expertProfile_model_1.default.findOne({ userId });
+            if (expertProfile) {
+                yield expertProfile_model_1.default.deleteOne({ _id: expertProfile._id });
+            }
+            mail_service_1.default.verifyRejectEmail(user.email, user.username);
+            yield user_model_1.default.deleteOne({ _id: userId });
+            return { message: "Rejected Successfully and user deleted" };
+        });
+        this.updatedCv = (userId, file) => __awaiter(this, void 0, void 0, function* () {
+            const userExpertProfile = yield this.getOneExpertProfile(userId);
+            yield cloudinary_service_1.default.deleteImageOrFile(userExpertProfile.cv.publicId);
+            const uploadResult = yield cloudinary_service_1.default.uploadStreamFile(file.buffer, constant_1.CloudinaryFolders.CVS);
+            yield expertProfile_model_1.default.updateOne({ _id: userId }, {
+                cv: {
+                    url: uploadResult.url,
+                    publicId: uploadResult.publicId,
+                },
+            });
+            return { message: constant_1.UserSuccess.UPDATED_USER_EXPERT_PROFILE_SUCCESSFULLY };
+        });
+        /**
          * Uploads a new avatar to Cloudinary and updates the user's avatar field.
          * If the user already has an avatar, the old one is deleted first.
          *
@@ -166,7 +235,7 @@ class UserService {
                 });
             }
             else {
-                yield cloudinary_service_1.default.deleteImage((_b = user.avatar) === null || _b === void 0 ? void 0 : _b.publicId);
+                yield cloudinary_service_1.default.deleteImageOrFile((_b = user.avatar) === null || _b === void 0 ? void 0 : _b.publicId);
                 const uploadResult = yield cloudinary_service_1.default.uploadImage(file, constant_1.CloudinaryFolders.AVATARS);
                 yield user_model_1.default.updateOne({ _id: userId }, {
                     avatar: {
@@ -186,7 +255,7 @@ class UserService {
         this.deleteAvatar = (userId) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             const user = yield this.getOneUser(userId);
-            yield cloudinary_service_1.default.deleteImage((_a = user.avatar) === null || _a === void 0 ? void 0 : _a.publicId);
+            yield cloudinary_service_1.default.deleteImageOrFile((_a = user.avatar) === null || _a === void 0 ? void 0 : _a.publicId);
             yield user_model_1.default.updateOne({ _id: userId }, {
                 avatar: {
                     url: user_model_1.DEFAULT_AVATAR.url,
@@ -210,11 +279,17 @@ class UserService {
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             return user;
         });
+        this.getOneExpertProfile = (id) => __awaiter(this, void 0, void 0, function* () {
+            const expertProfile = yield expertProfile_model_1.default.findOne({ userId: id });
+            if (!expertProfile)
+                throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
+            return expertProfile;
+        });
         this.getPagination = (page, limit) => {
             const pageNumber = page ? parseInt(page) : 1;
             const limitNumber = limit ? parseInt(limit) : 20;
             const skip = (pageNumber - 1) * limitNumber;
-            return { pageNumber, limitNumber, skip };
+            return { limitNumber, skip };
         };
     }
 }

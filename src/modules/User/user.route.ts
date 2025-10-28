@@ -52,7 +52,18 @@ class UserRouter {
       auth,
       expressAsyncHandler(this.userController.getOne)
     );
-
+    this.router.patch(
+      "/accept/:userId",
+      auth,
+      authRoles(UserRoles.ADMIN),
+      expressAsyncHandler(this.userController.acceptRequest)
+    );
+    this.router.delete(
+      "/reject/:userId",
+      auth,
+      authRoles(UserRoles.ADMIN),
+      expressAsyncHandler(this.userController.rejectRequest)
+    );
     this.router.patch(
       "/",
       validate(updateUserSchema),

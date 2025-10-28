@@ -26,7 +26,7 @@ node_cron_1.default.schedule("0 0 * * *", () => __awaiter(void 0, void 0, void 0
     yield Promise.all(usersToDelete.map((user) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         if ((_a = user.avatar) === null || _a === void 0 ? void 0 : _a.publicId)
-            yield cloudinary_service_1.default.deleteImage(user.avatar.publicId);
+            yield cloudinary_service_1.default.deleteImageOrFile(user.avatar.publicId);
     })));
     yield user_model_1.default.deleteMany({
         isDeleted: { $lte: sevenDaysAgo },

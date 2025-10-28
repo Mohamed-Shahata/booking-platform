@@ -16,6 +16,8 @@ const resendCode_dto_1 = require("./dto/resendCode.dto");
 const registerExpert_dto_1 = require("./dto/registerExpert.dto");
 const multer_middleware_1 = require("../../shared/middlewares/multer.middleware");
 const loginWithGoogle_dto_1 = require("./dto/loginWithGoogle.dto");
+const auth_middleware_1 = require("../../shared/middlewares/auth.middleware");
+const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
 class AuthRouter {
     constructor() {
         this.router = (0, express_1.Router)();
@@ -26,6 +28,8 @@ class AuthRouter {
             this.router.post("/register-expert", multer_middleware_1.uploadFile.single("cv"), (0, validation_middleware_1.default)(registerExpert_dto_1.registerExpertSchema), (0, express_async_handler_1.default)(this.authController.registerExpert));
             // POST ~/auth/verify
             this.router.post("/verify", (0, validation_middleware_1.default)(verifyEmail_dto_1.verifyEmailSchema), (0, express_async_handler_1.default)(this.authController.verifyEmail));
+            // POST ~/auth/verify
+            this.router.get("/verify/experts", auth_middleware_1.auth, (0, auth_middleware_1.authRoles)(UserRoles_enum_1.UserRoles.ADMIN), (0, express_async_handler_1.default)(this.authController.verifyEmail));
             // POST ~/auth/login
             this.router.post("/login", (0, validation_middleware_1.default)(login_dto_1.loginSchema), (0, express_async_handler_1.default)(this.authController.login));
             //POST ~/auth/google-login

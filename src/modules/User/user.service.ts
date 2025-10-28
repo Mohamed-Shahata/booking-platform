@@ -14,6 +14,7 @@ import CloudinaryService from "../../shared/services/cloudinary.service";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import ExpertProfile from "../../DB/model/expertProfile.model";
 import { GetAllExpertDto } from "./dto/getAllExpert.dto";
+import mailService from "../../shared/Mail/mail.service";
 
 class UserService {
   constructor() {}
@@ -42,7 +43,19 @@ class UserService {
 
     return users;
   };
-
+/**
+   * Get all experts with optional filters and pagination (for Flutter)
+   *
+   * Retrieves a paginated list of experts filtered by specialty, rate, and years of experience.
+   * Populates the `userId` field to include basic user data (username, avatar).
+   *
+   * @param dto - The filter and pagination data (page, limit, specialty, rate, yearsOfExperience)
+   * @returns A list of expert profiles matching the provided filters
+   *
+   * Example:
+   *  page = 1, limit = 10, specialty = "Cardiology", rate = 4.5
+   *  → returns up to 10 cardiologists with a 4.5 rating or higher
+   */
   public getAllExpert = async (
     dto: GetAllExpertDto
   ): Promise<Array<IExpertProfile>> => {
@@ -143,6 +156,46 @@ class UserService {
     const user = await this.getOneUser(id);
     return user;
   };
+  /**
+ * Accept a user's verification request
+ *
+ * Updates the specified user's account by setting `isVerified` to true.
+ *
+ * @param userId - The ObjectId of the user to verify
+ * @returns A success message if the user was updated
+ */
+  public acceptRequest = async (userId: Types.ObjectId): Promise<{ message: string }> => {
+    const user = await User.findOneAndUpdate({ _id: userId }, { $set: { isVerified: true } }, { new: true });
+    if (!user) {
+      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+    }
+  await mailService.verifyAcceptEmail(user.email, user.username);
+    return { message: "Accepted Successfully" };
+  };
+  /**
+ * Reject a user's verification request
+ *
+ * Sends a rejection email to the user, deletes their expert profile,
+ * and removes their account from the database.
+ *
+ * @param userId - The ObjectId of the user to reject
+ * @returns A success message after rejection and cleanup
+ */
+public rejectRequest = async (userId: Types.ObjectId): Promise<{ message: string }> => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+  }
+  const expertProfile = await ExpertProfile.findOne({ userId });
+  if (expertProfile) {
+    await ExpertProfile.deleteOne({ _id: expertProfile._id });
+  }
+ mailService.verifyRejectEmail(user.email, user.username);
+  await User.deleteOne({ _id: userId });
+
+  return { message: "Rejected Successfully and user deleted" };
+};
+
 
   public updatedCv = async (
     userId: Types.ObjectId,
@@ -150,7 +203,7 @@ class UserService {
   ) => {
     const userExpertProfile = await this.getOneExpertProfile(userId);
 
-    await CloudinaryService.deleteImageOrFile(userExpertProfile.cv.publicId);
+   await  CloudinaryService.deleteImageOrFile(userExpertProfile.cv.publicId);
     const uploadResult = await CloudinaryService.uploadStreamFile(
       file.buffer,
       CloudinaryFolders.CVS
