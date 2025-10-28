@@ -1,5 +1,5 @@
 import z from "zod";
-import { ExpertSpecialty } from "../../ExpertProfile/expertProfile.enum";
+import { ExpertSpecialty } from "../../../shared/enums/expertProfile.enum";
 import { UserGender } from "../../User/user.enum";
 
 export const registerExpertSchema = z.object({

@@ -1,7 +1,7 @@
 import z from "zod";
 import { Types } from "mongoose";
 import { UserGender } from "../user.enum";
-import { ExpertSpecialty } from "../../ExpertProfile/expertProfile.enum";
+import { ExpertSpecialty } from "../../../shared/enums/expertProfile.enum";
 
 /**
  * Unified schema for updating both User and ExpertProfile

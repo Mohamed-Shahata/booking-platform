@@ -30,6 +30,16 @@ class UserController {
                 message: constant_1.UserSuccess.GET_ALL_USERS_DONE,
             });
         });
+        // GET ~/expert?page=1&limit=20
+        this.gelAllExperts = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const dto = req.query;
+            const users = yield this.userService.getAllExpert(dto);
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, {
+                data: users,
+                success: true,
+                message: constant_1.UserSuccess.GET_ALL_EXPERT_DONE,
+            });
+        });
         /**
          * dto is => Validation data is {username, phone, gender}
          * PATCH ~/users

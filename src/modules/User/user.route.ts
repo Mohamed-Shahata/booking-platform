@@ -11,6 +11,7 @@ import {
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import { updateUserSchema } from "./dto/updateUser.dto";
 import { uploadImage } from "../../shared/middlewares/multer.middleware";
+import { getAllExpertSchema } from "./dto/getAllExpert.dto";
 
 class UserRouter {
   router = Router();
@@ -30,6 +31,13 @@ class UserRouter {
       expressAsyncHandler(this.userController.gelAllUsers)
     );
 
+        this.router.get(
+      "/experts",
+      validate(getAllExpertSchema),
+      auth,
+      authRoles(UserRoles.CLIENT),
+      expressAsyncHandler(this.userController.gelAllExperts)
+    );
     this.router.get(
       "/me",
       auth,
