@@ -71,7 +71,7 @@ class AuthService {
                 throw new app_error_1.default(constant_1.UserError.USER_ALREADY_EXSITS, statusCode_enum_1.StatusCode.CONFLICT);
             // generate a new OTP
             const otp = this.generateOtp();
-            const user = yield user_model_1.default.create({
+            yield user_model_1.default.create({
                 username,
                 email,
                 gender,
@@ -81,7 +81,7 @@ class AuthService {
                 verificationCodeExpires: this.generateExpiryTime(5),
             });
             // send otp to user email
-            yield mail_service_1.default.sendVreficationEmail(email, username, otp);
+            mail_service_1.default.sendVreficationEmail(email, username, otp);
             return {
                 message: "We sent a new otp of your email, check your email please",
             };
@@ -145,6 +145,11 @@ class AuthService {
                 throw new app_error_1.default(constant_1.ValidationError.CODE_EXPIRED, statusCode_enum_1.StatusCode.BAD_REQUEST);
             if (user.verificationCode !== code)
                 throw new app_error_1.default(constant_1.ValidationError.CODE_IS_WRONG, statusCode_enum_1.StatusCode.BAD_REQUEST);
+            if (user.role === UserRoles_enum_1.UserRoles.EXPERT) {
+                return {
+                    message: "Admin you check you account and aproved it beffor 24 hours",
+                };
+            }
             yield user.updateOne({
                 isVerified: true,
                 $unset: {
@@ -156,6 +161,13 @@ class AuthService {
                 },
             });
             return { message: "User created successfully" };
+        });
+        this.getAllExpertsIsNotverified = () => __awaiter(this, void 0, void 0, function* () {
+            const experts = yield user_model_1.default.find({
+                role: UserRoles_enum_1.UserRoles.EXPERT,
+                isVerified: false,
+            });
+            return experts;
         });
         /**
          * Authenticates a user using a Google ID token.
@@ -204,12 +216,12 @@ class AuthService {
             return { user, accessToken };
         });
         /**
-       * Authenticates a user by validating email and password.
-       * If successful, returns the user data along with an access token.
-       *
-       * @param dto - Login credentials (email and password)
-       * @returns Authenticated user and generated access token
-       */
+         * Authenticates a user by validating email and password.
+         * If successful, returns the user data along with an access token.
+         *
+         * @param dto - Login credentials (email and password)
+         * @returns Authenticated user and generated access token
+         */
         this.login = (dto) => __awaiter(this, void 0, void 0, function* () {
             const { email, password } = dto;
             const user = yield this.findUserByEmail(email, constant_1.ValidationError.EMAIL_OR_PASSWORD_IS_WRONG, true);

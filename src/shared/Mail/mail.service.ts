@@ -1,4 +1,4 @@
-import { getVreficationTemplate } from "./mail.templates";
+import { getVreficationTemplate, verifyAcceptTemplate, verifyRejectTemplate } from "./mail.templates";
 import { config } from "dotenv";
 import { SubjectMail } from "../utils/constant";
 import { Resend } from "resend";
@@ -36,6 +36,14 @@ class MailService {
   public sendRestPassword = (to: string, name: string, code: string) => {
     const html = getVreficationTemplate(name, code);
     return this.sendMail(to, SubjectMail.REST_PASSWORD, html);
+  };
+  public verifyAcceptEmail = (to: string, name: string) => {
+    const html = verifyAcceptTemplate(name);
+    return this.sendMail(to, SubjectMail.ACCEPT_EMAIL, html);
+  };
+  public verifyRejectEmail = (to: string, name: string) => {
+    const html = verifyRejectTemplate(name);
+    return this.sendMail(to, SubjectMail.REJECT_EMAIL, html);
   };
 }
 

@@ -93,6 +93,36 @@ class UserController {
                 message: "Done",
             });
         });
+        // patch ~/users/accept/:userId
+        this.acceptRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const userId = new mongoose_1.Types.ObjectId(req.params.userId);
+            const user = yield this.userService.acceptRequest(userId);
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, {
+                data: { user },
+                success: true,
+                message: "Done",
+            });
+        });
+        // patch ~/users/reject/:userId
+        this.rejectRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const userId = new mongoose_1.Types.ObjectId(req.params.userId);
+            const result = yield this.userService.rejectRequest(userId);
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, {
+                data: { result },
+                success: true,
+                message: "Rejected Successfully",
+            });
+        });
+        // POST ~/users/update-cv
+        this.updateCv = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const file = req.file;
+            const userId = new mongoose_1.Types.ObjectId((_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
+            if (!file)
+                throw new app_error_1.default("No file uploaded", statusCode_enum_1.StatusCode.BAD_REQUEST);
+            const { message } = yield this.userService.updatedCv(userId, file);
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, { success: true, message });
+        });
         // POST ~/users/upload-avatar
         this.uploadAndUpdateAvatar = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;

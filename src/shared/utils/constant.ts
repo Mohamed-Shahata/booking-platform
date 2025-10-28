@@ -37,6 +37,8 @@ export const ValidationError = {
 export const SubjectMail = {
   VERIFICATION_EMAIL: "Verification email",
   REST_PASSWORD: "Rest_Password",
+  REJECT_EMAIL: "Verification Request Rejected",
+  ACCEPT_EMAIL: "Verification Request Accepted",
 };
 
 export const ServerErrors = {

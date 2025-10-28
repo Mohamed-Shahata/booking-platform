@@ -53,7 +53,7 @@ const userSchema = new mongoose_1.Schema({
         type: String,
         required: function () {
             return this.provider === exports.providerTypes.system;
-        }
+        },
     },
     gender: {
         type: String,
@@ -99,6 +99,11 @@ const userSchema = new mongoose_1.Schema({
         type: Date,
     },
     otpSentAt: Date,
+    hasExpertProfile: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "ExpertProfile",
+        default: null,
+    },
 }, {
     timestamps: true,
 });

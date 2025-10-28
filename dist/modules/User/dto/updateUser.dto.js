@@ -30,16 +30,10 @@ exports.updateUserSchema = zod_1.default.object({
             message: "Invalid userId",
         })
             .optional(),
-        specialty: zod_1.default.nativeEnum(expertProfile_enum_1.ExpertSpecialty).optional(),
+        specialty: zod_1.default.enum(expertProfile_enum_1.ExpertSpecialty).optional(),
         yearsOfExperience: zod_1.default.number().min(2).optional(),
         aboutYou: zod_1.default.string().optional(),
         bio: zod_1.default.string().optional(),
         rateing: zod_1.default.number().optional(),
-        cv: zod_1.default
-            .object({
-            fileName: zod_1.default.string().optional(),
-            fileUrl: zod_1.default.string().optional(),
-        })
-            .optional(),
     }),
 });

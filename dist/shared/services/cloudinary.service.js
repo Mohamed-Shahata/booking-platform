@@ -35,7 +35,7 @@ class CloudinaryService {
             }
         });
     }
-    static deleteImage(publicId) {
+    static deleteImageOrFile(publicId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield cloudinary_config_1.default.uploader.destroy(publicId);

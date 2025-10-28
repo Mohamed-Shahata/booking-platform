@@ -35,6 +35,8 @@ exports.ValidationError = {
 exports.SubjectMail = {
     VERIFICATION_EMAIL: "Verification email",
     REST_PASSWORD: "Rest_Password",
+    REJECT_EMAIL: "Verification Request Rejected",
+    ACCEPT_EMAIL: "Verification Request Accepted",
 };
 exports.ServerErrors = {
     INTERNAL_SERVER_ERROR: "Internal server error",
@@ -46,5 +48,6 @@ exports.UserSuccess = {
     GET_ALL_USERS_DONE: "Get All users done",
     GET_ALL_EXPERT_DONE: "Get All expert done",
     UPDATED_USER_SUCCESSFULLY: "Updated user successfully",
+    UPDATED_USER_EXPERT_PROFILE_SUCCESSFULLY: "Updated user expert profile successfully",
     YOUR_ACCOUNT_HAS_BEEN_DEACTIVATED_AND_SCHEDULED_FOR_PERMANENT_DELETION_AFTER_7_DAYS_YOU_CAN_REACTIVATE_IT_ANYTIME_BY_LOGGING_IN_AGAIN_BEFORE_THAT_PERIOD: "Your account has been deactivated and scheduled for permanet deletion after 7 days. You can reactivate it anytime by logging in again before that period.",
 };
