@@ -32,7 +32,7 @@ export const updateUserSchema = z.object({
       })
       .optional(),
 
-    specialty: z.nativeEnum(ExpertSpecialty).optional(),
+    specialty: z.enum(ExpertSpecialty).optional(),
 
     yearsOfExperience: z.number().min(2).optional(),
 
@@ -41,13 +41,6 @@ export const updateUserSchema = z.object({
     bio: z.string().optional(),
 
     rateing: z.number().optional(),
-
-    cv: z
-      .object({
-        fileName: z.string().optional(),
-        fileUrl: z.string().optional(),
-      })
-      .optional(),
   }),
 });
 

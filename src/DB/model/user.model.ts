@@ -42,13 +42,13 @@ const userSchema = new Schema<IUser>(
       required: true,
       unique: true,
     },
- 
-  password: {
-    type: String,
-    required: function (this: IUser) {
-      return this.provider === providerTypes.system;
-    }
-  },
+
+    password: {
+      type: String,
+      required: function (this: IUser) {
+        return this.provider === providerTypes.system;
+      },
+    },
     gender: {
       type: String,
       enum: UserGender,
@@ -93,6 +93,11 @@ const userSchema = new Schema<IUser>(
       type: Date,
     },
     otpSentAt: Date,
+    hasExpertProfile: {
+      type: Schema.Types.ObjectId,
+      ref: "ExpertProfile",
+      default: null,
+    },
   },
   {
     timestamps: true,

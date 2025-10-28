@@ -68,6 +68,11 @@ class AuthController {
     sendResponse(res, StatusCode.OK, { data: { message }, success: true });
   };
 
+  public getAllExpertsIsNotverified = async (req: Request, res: Response) => {
+    const experts = await this.authService.getAllExpertsIsNotverified();
+    sendResponse(res, StatusCode.OK, { data: { experts }, success: true });
+  };
+
   /**
    * dto is => Validation data is {email , password}
    * POST ~/auth/login
@@ -87,7 +92,7 @@ class AuthController {
       success: true,
     });
   };
-    /**
+  /**
    * dto is => Validation data is {idToken}
    * POST ~/auth/google-login
    *
@@ -96,7 +101,7 @@ class AuthController {
    * "idToken":""
    * }
    */
-    public loginWithGoogle = async (req: Request, res: Response) => {
+  public loginWithGoogle = async (req: Request, res: Response) => {
     const dto = req.body;
     const { user, accessToken } = await this.authService.loginWithGoogle(dto);
 

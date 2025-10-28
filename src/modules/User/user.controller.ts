@@ -27,7 +27,7 @@ class UserController {
       message: UserSuccess.GET_ALL_USERS_DONE,
     });
   };
-    // GET ~/expert?page=1&limit=20
+  // GET ~/expert?page=1&limit=20
   public gelAllExperts = async (req: Request, res: Response) => {
     const dto = req.query;
 
@@ -100,6 +100,18 @@ class UserController {
       success: true,
       message: "Done",
     });
+  };
+
+  // POST ~/users/update-cv
+  public updateCv = async (req: CustomRequest, res: Response) => {
+    const file = req.file;
+    const userId = new Types.ObjectId(req.user?.id);
+
+    if (!file) throw new AppError("No file uploaded", StatusCode.BAD_REQUEST);
+
+    const { message } = await this.userService.updatedCv(userId, file);
+
+    sendResponse(res, StatusCode.OK, { success: true, message });
   };
 
   // POST ~/users/upload-avatar

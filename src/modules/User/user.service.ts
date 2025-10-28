@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import User, { DEFAULT_AVATAR } from "../../DB/model/user.model";
 import { GetAllUserDto } from "./dto/getAllUsers.dto";
-import { IUser } from "./user.type";
+import { IExpertProfile, IUser } from "./user.type";
 import AppError from "../../shared/errors/app.error";
 import {
   CloudinaryFolders,
@@ -14,7 +14,6 @@ import CloudinaryService from "../../shared/services/cloudinary.service";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import ExpertProfile from "../../DB/model/expertProfile.model";
 import { GetAllExpertDto } from "./dto/getAllExpert.dto";
-import { IExpertProfile } from "./expertProfile.type";
 
 class UserService {
   constructor() {}
@@ -33,11 +32,10 @@ class UserService {
    */
   public getAllUsers = async (dto: GetAllUserDto): Promise<Array<IUser>> => {
     const { page, limit } = dto;
-  const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
+    const { limitNumber, skip } = this.getPagination(page, limit);
 
-
-    const users = await User.find({ isVerified: true})
-      .select("username email image gender phone")
+    const users = await User.find({ isVerified: true })
+      .select("username email avatar gender phone")
       .limit(limitNumber)
       .skip(skip)
       .exec();
@@ -45,16 +43,23 @@ class UserService {
     return users;
   };
 
-    public getAllExpert = async (dto: GetAllExpertDto): Promise<Array<IExpertProfile>> => {
-    const { page, limit ,filter,rate} = dto;
-  const { pageNumber, limitNumber, skip } = this.getPagination(page, limit);
-    const expert = await ExpertProfile.find({ isVerified: true,specialty:filter,rateing:rate})
+  public getAllExpert = async (
+    dto: GetAllExpertDto
+  ): Promise<Array<IExpertProfile>> => {
+    const { page, limit, specialty, rate, yearsOfExperience } = dto;
+    const { limitNumber, skip } = this.getPagination(page, limit);
+    const experts = await ExpertProfile.find({
+      yearsOfExperience,
+      specialty,
+      rateing: rate,
+    })
+      .populate("userId", "username avatar")
       .select("specialty yearsOfExperience bio rateing")
       .limit(limitNumber)
       .skip(skip)
       .exec();
 
-    return expert;
+    return experts;
   };
 
   /**
@@ -139,6 +144,30 @@ class UserService {
     return user;
   };
 
+  public updatedCv = async (
+    userId: Types.ObjectId,
+    file: Express.Multer.File
+  ) => {
+    const userExpertProfile = await this.getOneExpertProfile(userId);
+
+    await CloudinaryService.deleteImageOrFile(userExpertProfile.cv.publicId);
+    const uploadResult = await CloudinaryService.uploadStreamFile(
+      file.buffer,
+      CloudinaryFolders.CVS
+    );
+    await ExpertProfile.updateOne(
+      { _id: userId },
+      {
+        cv: {
+          url: uploadResult.url,
+          publicId: uploadResult.publicId,
+        },
+      }
+    );
+
+    return { message: UserSuccess.UPDATED_USER_EXPERT_PROFILE_SUCCESSFULLY };
+  };
+
   /**
    * Uploads a new avatar to Cloudinary and updates the user's avatar field.
    * If the user already has an avatar, the old one is deleted first.
@@ -168,7 +197,7 @@ class UserService {
         }
       );
     } else {
-      await CloudinaryService.deleteImage(user.avatar?.publicId!);
+      await CloudinaryService.deleteImageOrFile(user.avatar?.publicId!);
       const uploadResult = await CloudinaryService.uploadImage(
         file,
         CloudinaryFolders.AVATARS
@@ -198,7 +227,7 @@ class UserService {
   ): Promise<{ message: string }> => {
     const user = await this.getOneUser(userId);
 
-    await CloudinaryService.deleteImage(user.avatar?.publicId!);
+    await CloudinaryService.deleteImageOrFile(user.avatar?.publicId!);
 
     await User.updateOne(
       { _id: userId },
@@ -228,13 +257,21 @@ class UserService {
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return user;
   };
-private getPagination = (page?: string, limit?: string) => {
-  const pageNumber = page ? parseInt(page) : 1;
-  const limitNumber = limit ? parseInt(limit) : 20;
-  const skip = (pageNumber - 1) * limitNumber;
 
-  return { pageNumber, limitNumber, skip };
-};
+  private getOneExpertProfile = async (
+    id: Types.ObjectId
+  ): Promise<IExpertProfile> => {
+    const expertProfile = await ExpertProfile.findOne({ userId: id });
+    if (!expertProfile)
+      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+    return expertProfile;
+  };
+  private getPagination = (page?: string, limit?: string) => {
+    const pageNumber = page ? parseInt(page) : 1;
+    const limitNumber = limit ? parseInt(limit) : 20;
+    const skip = (pageNumber - 1) * limitNumber;
 
+    return { limitNumber, skip };
+  };
 }
 export default UserService;

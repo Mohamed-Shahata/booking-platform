@@ -21,7 +21,7 @@ class CloudinaryService {
     }
   }
 
-  static async deleteImage(publicId: string) {
+  static async deleteImageOrFile(publicId: string) {
     try {
       await cloudinary.uploader.destroy(publicId);
     } catch (err) {

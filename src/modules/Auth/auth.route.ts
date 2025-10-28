@@ -11,6 +11,8 @@ import { resendCodeSchema } from "./dto/resendCode.dto";
 import { registerExpertSchema } from "./dto/registerExpert.dto";
 import { uploadFile } from "../../shared/middlewares/multer.middleware";
 import { googleLoginSchema } from "./dto/loginWithGoogle.dto";
+import { auth, authRoles } from "../../shared/middlewares/auth.middleware";
+import { UserRoles } from "../../shared/enums/UserRoles.enum";
 
 class AuthRouter {
   router = Router();
@@ -43,6 +45,14 @@ class AuthRouter {
       expressAsyncHandler(this.authController.verifyEmail)
     );
 
+    // POST ~/auth/verify
+    this.router.get(
+      "/verify/experts",
+      auth,
+      authRoles(UserRoles.ADMIN),
+      expressAsyncHandler(this.authController.verifyEmail)
+    );
+
     // POST ~/auth/login
     this.router.post(
       "/login",
@@ -50,11 +60,11 @@ class AuthRouter {
       expressAsyncHandler(this.authController.login)
     );
     //POST ~/auth/google-login
-this.router.post(
-  "/google-login",
-  validate(googleLoginSchema),
-  this.authController.loginWithGoogle
-);
+    this.router.post(
+      "/google-login",
+      validate(googleLoginSchema),
+      this.authController.loginWithGoogle
+    );
 
     // patch ~/auth/forgetPassword
 

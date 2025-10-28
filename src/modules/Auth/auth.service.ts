@@ -19,7 +19,6 @@ import { RegisterExpertDto } from "./dto/registerExpert.dto";
 import ExpertProfile from "../../DB/model/expertProfile.model";
 import CloudinaryService from "../../shared/services/cloudinary.service";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
-import { GoogleLoginDto } from "./dto/loginWithGoogle.dto";
 import { OAuth2Client } from "google-auth-library";
 
 class AuthService {
@@ -43,7 +42,7 @@ class AuthService {
     // generate a new OTP
     const otp = this.generateOtp();
 
-    const user = await User.create({
+    await User.create({
       username,
       email,
       gender,
@@ -54,7 +53,7 @@ class AuthService {
     });
 
     // send otp to user email
-    await mailService.sendVreficationEmail(email, username, otp);
+    mailService.sendVreficationEmail(email, username, otp);
 
     return {
       message: "We sent a new otp of your email, check your email please",
@@ -121,7 +120,7 @@ class AuthService {
     });
 
     // send otp to user email
-     mailService.sendVreficationEmail(email, username, otp);
+    mailService.sendVreficationEmail(email, username, otp);
 
     return {
       message: "We sent a new otp of your email, check your email please",
@@ -156,6 +155,12 @@ class AuthService {
     if (user.verificationCode !== code)
       throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
 
+    if (user.role === UserRoles.EXPERT) {
+      return {
+        message: "Admin you check you account and aproved it beffor 24 hours",
+      };
+    }
+
     await user.updateOne({
       isVerified: true,
       $unset: {
@@ -169,6 +174,15 @@ class AuthService {
 
     return { message: "User created successfully" };
   };
+
+  public getAllExpertsIsNotverified = async () => {
+    const experts = await User.find({
+      role: UserRoles.EXPERT,
+      isVerified: false,
+    });
+    return experts;
+  };
+
   /**
    * Authenticates a user using a Google ID token.
    * If the token is valid and the user exists (or is created),
@@ -180,7 +194,7 @@ class AuthService {
    * @throws {AppError} If the Google token is invalid, the email is unverified,
    *                    or the provider type doesn't match
    */
-public loginWithGoogle = async (
+  public loginWithGoogle = async (
     idToken: string
   ): Promise<{ user: IUser; accessToken: string }> => {
     // Verify token from Google
@@ -216,7 +230,10 @@ public loginWithGoogle = async (
 
     // ⚠️ Validate provider
     if (user.provider !== providerTypes.google) {
-      throw new AppError("Invalid provider for this email", StatusCode.BAD_REQUEST);
+      throw new AppError(
+        "Invalid provider for this email",
+        StatusCode.BAD_REQUEST
+      );
     }
 
     // 🪪 Generate Access Token
@@ -226,14 +243,14 @@ public loginWithGoogle = async (
     return { user, accessToken };
   };
 
-    /**
+  /**
    * Authenticates a user by validating email and password.
    * If successful, returns the user data along with an access token.
    *
    * @param dto - Login credentials (email and password)
    * @returns Authenticated user and generated access token
    */
- public login = async (
+  public login = async (
     dto: LoginDto
   ): Promise<{ user: IUser; accessToken: string }> => {
     const { email, password } = dto;
@@ -255,7 +272,7 @@ public loginWithGoogle = async (
         ? (Date.now() - user.isDeleted.getTime()) / (1000 * 60 * 60 * 24)
         : 0;
       if (daysSinceDelete < 7) {
-    await user.updateOne({$unset:{isDeleted:0}})
+        await user.updateOne({ $unset: { isDeleted: 0 } });
       }
     }
     const isMatch = await user.comparePassword(password);
@@ -277,7 +294,7 @@ public loginWithGoogle = async (
    * @param dto - Email verification
    * @returns A success message upon successful send code
    */
-  
+
   public forgetPassword = async (
     dto: forgetPasswordDto
   ): Promise<{ message: string }> => {
@@ -456,7 +473,6 @@ public loginWithGoogle = async (
    */
   private generateOtp = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
-      
   };
   private client = new OAuth2Client(process.env.WEB_CLIENT_ID!);
 }

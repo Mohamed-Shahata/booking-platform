@@ -3,7 +3,7 @@ import { ExpertSpecialty } from "../../../shared/enums/expertProfile.enum";
 
 export const getAllExpertSchema = z.object({
   query: z.object({
-    filter: z
+    specialty: z
       .enum([
         ExpertSpecialty.BUSINESS,
         ExpertSpecialty.IT,
@@ -11,14 +11,15 @@ export const getAllExpertSchema = z.object({
       ])
       .default(ExpertSpecialty.MEDICAL)
       .optional(),
+    yearsOfExperience: z.number().min(2).optional(),
     page: z.string().optional(),
-     rate: z
-    .number({
-      error: "Rate must be a number",
-    })
-    .min(1, "Rate must be at least 1")
-    .max(5, "Rate cannot be more than 5")
-    .optional(),
+    rate: z
+      .number({
+        error: "Rate must be a number",
+      })
+      .min(1, "Rate must be at least 1")
+      .max(5, "Rate cannot be more than 5")
+      .optional(),
     limit: z.string().optional(),
   }),
 });

@@ -10,7 +10,10 @@ import {
 } from "../../shared/middlewares/auth.middleware";
 import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import { updateUserSchema } from "./dto/updateUser.dto";
-import { uploadImage } from "../../shared/middlewares/multer.middleware";
+import {
+  uploadFile,
+  uploadImage,
+} from "../../shared/middlewares/multer.middleware";
 import { getAllExpertSchema } from "./dto/getAllExpert.dto";
 
 class UserRouter {
@@ -31,11 +34,11 @@ class UserRouter {
       expressAsyncHandler(this.userController.gelAllUsers)
     );
 
-        this.router.get(
+    this.router.get(
       "/experts",
       validate(getAllExpertSchema),
       auth,
-      authRoles(UserRoles.CLIENT),
+      authRoles(UserRoles.CLIENT, UserRoles.ADMIN),
       expressAsyncHandler(this.userController.gelAllExperts)
     );
     this.router.get(
@@ -63,6 +66,13 @@ class UserRouter {
       auth,
       isAccount,
       expressAsyncHandler(this.userController.delete)
+    );
+
+    this.router.post(
+      "/upload-cv",
+      auth,
+      uploadFile.single("cv"),
+      expressAsyncHandler(this.userController.updateCv)
     );
 
     this.router.post(

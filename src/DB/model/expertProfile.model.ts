@@ -1,9 +1,6 @@
 import { model, Schema } from "mongoose";
-import {
-  ICV,
-  IExpertProfile,
-} from "../../modules/User/expertProfile.type";
 import { ExpertSpecialty } from "../../shared/enums/expertProfile.enum";
+import { ICV, IExpertProfile } from "../../modules/User/user.type";
 
 const cvShema = new Schema<ICV>(
   {
