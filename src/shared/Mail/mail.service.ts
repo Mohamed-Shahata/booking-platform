@@ -17,7 +17,6 @@ class MailService {
     this.transport = createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: process.env.NODE_ENV === Environment.PRODUCTION ? true : false,
       auth: {
         user: process.env.SMTP_USERNAME,
         pass: process.env.SMTP_PASSWORD,
@@ -28,7 +27,7 @@ class MailService {
   private sendMail = async (to: string, subject: string, html: string) => {
     try {
       const result = await this.transport.sendMail({
-        from: `"Aistisharaticompany" <${process.env.SMTP_USER}>`,
+        from: `Aistisharaticompany <${process.env.SENDER_EMAIL}>`,
         to,
         subject,
         html,
