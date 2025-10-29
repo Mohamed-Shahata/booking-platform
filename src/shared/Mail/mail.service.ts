@@ -3,40 +3,31 @@ import {
   verifyAcceptTemplate,
   verifyRejectTemplate,
 } from "./mail.templates";
+import sgMail from "@sendgrid/mail";
 import { config } from "dotenv";
-import { Environment, SubjectMail } from "../utils/constant";
-import { createTransport } from "nodemailer";
-import AppError from "../errors/app.error";
-import { StatusCode } from "../enums/statusCode.enum";
+import { SubjectMail } from "../utils/constant";
+
 config();
 
 class MailService {
-  private transport;
-
   constructor() {
-    this.transport = createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      auth: {
-        user: process.env.SMTP_USERNAME,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
   }
 
-  private sendMail = async (to: string, subject: string, html: string) => {
+  public sendMail = async (to: string, subject: string, html: string) => {
     try {
-      const result = await this.transport.sendMail({
-        from: `Aistisharaticompany <${process.env.SENDER_EMAIL}>`,
+      const msg = {
         to,
+        from: `"Aistisharaticompany" <${process.env.SENDER_EMAIL}>`,
         subject,
         html,
-      });
-      console.log("send email success");
-      return result;
-    } catch (error) {
-      console.error("Failed to send email:", error);
-      throw new AppError("Send email faild", StatusCode.BAD_REQUEST);
+      };
+
+      await sgMail.send(msg);
+      console.log("✅ Email sent successfully!");
+    } catch (error: any) {
+      console.error("❌ Failed to send email:", error.response?.body || error);
+      throw new Error("Send email failed");
     }
   };
 
