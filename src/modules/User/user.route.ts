@@ -26,6 +26,7 @@ class UserRouter {
   }
 
   private initRoutes() {
+    // Get ~/users
     this.router.get(
       "/",
       validate(getAllUserSchema),
@@ -34,6 +35,7 @@ class UserRouter {
       expressAsyncHandler(this.userController.gelAllUsers)
     );
 
+    // Get ~/users/experts
     this.router.get(
       "/experts",
       validate(getAllExpertSchema),
@@ -41,29 +43,46 @@ class UserRouter {
       authRoles(UserRoles.CLIENT, UserRoles.ADMIN),
       expressAsyncHandler(this.userController.gelAllExperts)
     );
+
+    // Get ~/users/verify/experts
+    this.router.get(
+      "/not-verify/experts",
+      auth,
+      authRoles(UserRoles.ADMIN),
+      expressAsyncHandler(this.userController.getAllExpertsIsNotverified)
+    );
+
+    // Get ~/users/me
     this.router.get(
       "/me",
       auth,
       expressAsyncHandler(this.userController.getMe)
     );
 
+    // Get ~/users/userId
     this.router.get(
       "/:userId",
       auth,
       expressAsyncHandler(this.userController.getOne)
     );
+
+    // Patch ~/users/accept/userId
     this.router.patch(
       "/accept/:userId",
       auth,
       authRoles(UserRoles.ADMIN),
       expressAsyncHandler(this.userController.acceptRequest)
     );
+
+    // Delete ~/users/reject/userId
     this.router.delete(
       "/reject/:userId",
       auth,
       authRoles(UserRoles.ADMIN),
       expressAsyncHandler(this.userController.rejectRequest)
     );
+
+    // Patch ~/users
     this.router.patch(
       "/",
       validate(updateUserSchema),
@@ -72,6 +91,7 @@ class UserRouter {
       expressAsyncHandler(this.userController.update)
     );
 
+    // Delete ~/users
     this.router.delete(
       "/",
       auth,
@@ -79,6 +99,7 @@ class UserRouter {
       expressAsyncHandler(this.userController.delete)
     );
 
+    // Post ~/users/upload-cv
     this.router.post(
       "/upload-cv",
       auth,
@@ -86,6 +107,7 @@ class UserRouter {
       expressAsyncHandler(this.userController.updateCv)
     );
 
+    // Post ~/users/upload-avatar
     this.router.post(
       "/upload-avatar",
       auth,
@@ -93,6 +115,7 @@ class UserRouter {
       expressAsyncHandler(this.userController.uploadAndUpdateAvatar)
     );
 
+    // Delete ~/users/delete-avatar
     this.router.delete(
       "/delete-avatar",
       auth,

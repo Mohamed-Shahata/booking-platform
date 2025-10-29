@@ -41,9 +41,11 @@ const expertProfileSchema = new Schema<IExpertProfile>(
     },
     bio: {
       type: String,
+      default: "",
     },
     rateing: {
       type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

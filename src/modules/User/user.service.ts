@@ -43,7 +43,8 @@ class UserService {
 
     return users;
   };
-/**
+
+  /**
    * Get all experts with optional filters and pagination (for Flutter)
    *
    * Retrieves a paginated list of experts filtered by specialty, rate, and years of experience.
@@ -56,22 +57,70 @@ class UserService {
    *  page = 1, limit = 10, specialty = "Cardiology", rate = 4.5
    *  → returns up to 10 cardiologists with a 4.5 rating or higher
    */
-  public getAllExpert = async (
-    dto: GetAllExpertDto
-  ): Promise<Array<IExpertProfile>> => {
-    const { page, limit, specialty, rate, yearsOfExperience } = dto;
+  public getAllExpert = async (dto: GetAllExpertDto): Promise<Array<IUser>> => {
+    const { page, limit, specialty, rateing, yearsOfExperience } = dto;
     const { limitNumber, skip } = this.getPagination(page, limit);
-    const experts = await ExpertProfile.find({
-      yearsOfExperience,
-      specialty,
-      rateing: rate,
-    })
-      .populate("userId", "username avatar")
-      .select("specialty yearsOfExperience bio rateing")
-      .limit(limitNumber)
-      .skip(skip)
-      .exec();
 
+    const experts = await User.aggregate([
+      {
+        $match: {
+          isVerified: true,
+          role: UserRoles.EXPERT,
+        },
+      },
+      {
+        $lookup: {
+          from: "expertprofiles",
+          localField: "hasExpertProfile",
+          foreignField: "_id",
+          as: "expertProfile",
+        },
+      },
+      {
+        $unwind: "$expertProfile",
+      },
+      {
+        $match: {
+          ...(specialty && { "expertProfile.specialty": specialty }),
+          ...(yearsOfExperience && {
+            "expertProfile.yearsOfExperience": {
+              $gte: Number(yearsOfExperience),
+            },
+          }),
+          ...(rateing && {
+            "expertProfile.rateing": { $gte: Number(rateing) },
+          }),
+        },
+      },
+      {
+        $project: {
+          username: 1,
+          avatar: 1,
+          "expertProfile.specialty": 1,
+          "expertProfile.rateing": 1,
+          "expertProfile.yearsOfExperience": 1,
+          "expertProfile.bio": 1,
+        },
+      },
+      { $skip: skip },
+      { $limit: limitNumber },
+    ]);
+
+    return experts;
+  };
+
+  /**
+   * Retrieves all expert users who are not verified.
+   *
+   * @returns {Promise<User[]>} List of unverified expert users.
+   */
+  public getAllExpertsIsNotverified = async (): Promise<IUser[]> => {
+    const experts = await User.find({
+      role: UserRoles.EXPERT,
+      isVerified: false,
+    })
+      .select("-password")
+      .populate("hasExpertProfile");
     return experts;
   };
 
@@ -156,54 +205,90 @@ class UserService {
     const user = await this.getOneUser(id);
     return user;
   };
+
   /**
- * Accept a user's verification request
- *
- * Updates the specified user's account by setting `isVerified` to true.
- *
- * @param userId - The ObjectId of the user to verify
- * @returns A success message if the user was updated
- */
-  public acceptRequest = async (userId: Types.ObjectId): Promise<{ message: string }> => {
-    const user = await User.findOneAndUpdate({ _id: userId }, { $set: { isVerified: true } }, { new: true });
+   * Accept a user's verification request
+   *
+   * Updates the specified user's account by setting `isVerified` to true.
+   *
+   * @param userId - The ObjectId of the user to verify
+   * @returns A success message if the user was updated
+   */
+  public acceptRequest = async (
+    userId: Types.ObjectId
+  ): Promise<{ message: string }> => {
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { isVerified: true } },
+      { new: true }
+    );
     if (!user) {
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     }
-  await mailService.verifyAcceptEmail(user.email, user.username);
+
+    if (user.verificationCode) {
+      throw new AppError(
+        UserError.USER_ACCOUNT_IS_NOT_VERIFIED_CODE,
+        StatusCode.BAD_REQUEST
+      );
+    }
+
+    mailService.verifyAcceptEmail(user.email, user.username);
     return { message: "Accepted Successfully" };
   };
+
   /**
- * Reject a user's verification request
- *
- * Sends a rejection email to the user, deletes their expert profile,
- * and removes their account from the database.
- *
- * @param userId - The ObjectId of the user to reject
- * @returns A success message after rejection and cleanup
- */
-public rejectRequest = async (userId: Types.ObjectId): Promise<{ message: string }> => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
-  }
-  const expertProfile = await ExpertProfile.findOne({ userId });
-  if (expertProfile) {
-    await ExpertProfile.deleteOne({ _id: expertProfile._id });
-  }
- mailService.verifyRejectEmail(user.email, user.username);
-  await User.deleteOne({ _id: userId });
+   * Reject a user's verification request
+   *
+   * Sends a rejection email to the user, deletes their expert profile,
+   * and removes their account from the database.
+   *
+   * @param userId - The ObjectId of the user to reject
+   * @returns A success message after rejection and cleanup
+   */
+  public rejectRequest = async (
+    userId: Types.ObjectId
+  ): Promise<{ message: string }> => {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+    }
 
-  return { message: "Rejected Successfully and user deleted" };
-};
+    if (user.verificationCode) {
+      throw new AppError(
+        UserError.USER_ACCOUNT_IS_NOT_VERIFIED_CODE,
+        StatusCode.BAD_REQUEST
+      );
+    }
 
+    const expertProfile = await ExpertProfile.findOne({ userId });
+    if (expertProfile) {
+      await ExpertProfile.deleteOne({ _id: expertProfile._id });
+    }
+    await User.deleteOne({ _id: userId });
 
+    mailService.verifyRejectEmail(user.email, user.username);
+
+    return { message: "Rejected Successfully and user deleted" };
+  };
+
+  /**
+   * Updates the expert's CV file.
+   * - Deletes the old CV from Cloudinary.
+   * - Uploads the new CV.
+   * - Updates the user's expert profile with the new CV details.
+   *
+   * @param {Types.ObjectId} userId - The user's ObjectId.
+   * @param {Express.Multer.File} file - The uploaded CV file.
+   * @returns {Promise<{ message: string }>} Success message.
+   */
   public updatedCv = async (
     userId: Types.ObjectId,
     file: Express.Multer.File
-  ) => {
+  ): Promise<{ message: string }> => {
     const userExpertProfile = await this.getOneExpertProfile(userId);
 
-   await  CloudinaryService.deleteImageOrFile(userExpertProfile.cv.publicId);
+    await CloudinaryService.deleteImageOrFile(userExpertProfile.cv.publicId);
     const uploadResult = await CloudinaryService.uploadStreamFile(
       file.buffer,
       CloudinaryFolders.CVS
@@ -305,12 +390,18 @@ public rejectRequest = async (userId: Types.ObjectId): Promise<{ message: string
    * @returns The found user document
    */
   private getOneUser = async (id: Types.ObjectId): Promise<IUser> => {
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("hasExpertProfile");
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return user;
   };
 
+  /**
+   * Fetches a single expert profile by user ID.
+   * @param {Types.ObjectId} id - The user's ObjectId.
+   * @returns {Promise<IExpertProfile>} The expert profile document.
+   * @throws {AppError} If no profile is found.
+   */
   private getOneExpertProfile = async (
     id: Types.ObjectId
   ): Promise<IExpertProfile> => {
@@ -319,7 +410,17 @@ public rejectRequest = async (userId: Types.ObjectId): Promise<{ message: string
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return expertProfile;
   };
-  private getPagination = (page?: string, limit?: string) => {
+
+  /**
+   * Calculates pagination values (limit and skip) from query params.
+   * @param {string} [page] - Current page number.
+   * @param {string} [limit] - Items per page.
+   * @returns {{ limitNumber: number, skip: number }} Pagination data.
+   */
+  private getPagination = (
+    page?: string,
+    limit?: string
+  ): { limitNumber: number; skip: number } => {
     const pageNumber = page ? parseInt(page) : 1;
     const limitNumber = limit ? parseInt(limit) : 20;
     const skip = (pageNumber - 1) * limitNumber;

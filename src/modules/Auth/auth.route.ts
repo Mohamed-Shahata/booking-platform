@@ -11,8 +11,6 @@ import { resendCodeSchema } from "./dto/resendCode.dto";
 import { registerExpertSchema } from "./dto/registerExpert.dto";
 import { uploadFile } from "../../shared/middlewares/multer.middleware";
 import { googleLoginSchema } from "./dto/loginWithGoogle.dto";
-import { auth, authRoles } from "../../shared/middlewares/auth.middleware";
-import { UserRoles } from "../../shared/enums/UserRoles.enum";
 
 class AuthRouter {
   router = Router();
@@ -30,6 +28,7 @@ class AuthRouter {
       validate(registerClientSchema),
       expressAsyncHandler(this.authController.registerClient)
     );
+
     // POST ~/auth/register-expert
     this.router.post(
       "/register-expert",
@@ -45,20 +44,13 @@ class AuthRouter {
       expressAsyncHandler(this.authController.verifyEmail)
     );
 
-    // POST ~/auth/verify
-    this.router.get(
-      "/verify/experts",
-      auth,
-      authRoles(UserRoles.ADMIN),
-      expressAsyncHandler(this.authController.verifyEmail)
-    );
-
     // POST ~/auth/login
     this.router.post(
       "/login",
       validate(loginSchema),
       expressAsyncHandler(this.authController.login)
     );
+
     //POST ~/auth/google-login
     this.router.post(
       "/google-login",
@@ -67,18 +59,19 @@ class AuthRouter {
     );
 
     // patch ~/auth/forgetPassword
-
     this.router.patch(
       "/forgetPassword",
       validate(forgetPasswordSchema),
       expressAsyncHandler(this.authController.forgetPassword)
     );
+
     // patch ~/auth/restPassword
     this.router.patch(
       "/restPassword",
       validate(restPasswordSchema),
       expressAsyncHandler(this.authController.restPassword)
     );
+
     // patch ~/auth/resendCode
     this.router.post(
       "/resendCode",

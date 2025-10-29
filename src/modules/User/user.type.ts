@@ -1,5 +1,10 @@
 import { Document, Types } from "mongoose";
 
+export interface ICV {
+  url: string;
+  publicId: string;
+}
+
 interface IAvatar {
   url: string;
   publicId: string | null;
@@ -17,20 +22,13 @@ export interface IUser extends Document {
   isVerified: boolean;
   verificationCode: string | null;
   verificationCodeExpires: Date | null;
-  resetPasswordToken: string | null;
-  resetPasswordExpire: Date | null;
   role: string;
   provider: string;
   isDeleted?: Date;
   otpSentAt?: Date;
   chanageCridentialsTime?: Date | null;
-  hasExpertProfile: IExpertProfile | null;
+  hasExpertProfile?: Types.ObjectId | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-export interface ICV {
-  url: string;
-  publicId: string;
 }
 
 export interface IExpertProfile extends Document {

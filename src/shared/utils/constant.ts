@@ -16,6 +16,7 @@ export const Environment = {
 export const CloudinaryFolders = {
   AVATARS: "avatars",
   CVS: "cvs",
+  CVS_DEVELOPMENT: "cvs development",
 };
 
 export const UserError = {
@@ -23,6 +24,7 @@ export const UserError = {
   USER_NOT_FOUND: "User not found",
   USER_ALREADY_EXSITS: "User already exsits",
   USER_ACCOUNT_IS_NOT_VERIFIED: "User account isn't verified",
+  USER_ACCOUNT_IS_NOT_VERIFIED_CODE: "User account isn't verified code",
 };
 
 export const ValidationError = {

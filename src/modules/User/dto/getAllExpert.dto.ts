@@ -9,11 +9,10 @@ export const getAllExpertSchema = z.object({
         ExpertSpecialty.IT,
         ExpertSpecialty.MEDICAL,
       ])
-      .default(ExpertSpecialty.MEDICAL)
       .optional(),
     yearsOfExperience: z.number().min(2).optional(),
     page: z.string().optional(),
-    rate: z
+    rateing: z
       .number({
         error: "Rate must be a number",
       })

@@ -68,11 +68,6 @@ class AuthController {
     sendResponse(res, StatusCode.OK, { data: { message }, success: true });
   };
 
-  public getAllExpertsIsNotverified = async (req: Request, res: Response) => {
-    const experts = await this.authService.getAllExpertsIsNotverified();
-    sendResponse(res, StatusCode.OK, { data: { experts }, success: true });
-  };
-
   /**
    * dto is => Validation data is {email , password}
    * POST ~/auth/login
@@ -92,6 +87,7 @@ class AuthController {
       success: true,
     });
   };
+
   /**
    * dto is => Validation data is {idToken}
    * POST ~/auth/google-login
@@ -149,16 +145,16 @@ class AuthController {
       success: true,
     });
   };
+
   /**
    * dto is => Validation data is {email}
-   * POST ~/auth/forgetPassword
+   * POST ~/auth/resendCode
    *
    * example
    * {
    *  email: "ex_email@gmail.com",
    * }
    */
-
   public resendCode = async (req: Request, res: Response) => {
     const dto = req.body;
     const { message } = await this.authService.resendCode(dto);

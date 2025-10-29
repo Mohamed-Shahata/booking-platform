@@ -75,9 +75,6 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
-    resetPasswordExpire: {
-      type: Date,
-    },
     role: {
       type: String,
       enum: UserRoles,

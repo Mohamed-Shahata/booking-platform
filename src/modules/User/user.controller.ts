@@ -6,7 +6,6 @@ import { Types } from "mongoose";
 import { UserSuccess } from "../../shared/utils/constant";
 import { CustomRequest } from "../../shared/middlewares/auth.middleware";
 import AppError from "../../shared/errors/app.error";
-import CloudinaryService from "../../shared/services/cloudinary.service";
 
 class UserController {
   private userService: UserService;
@@ -27,7 +26,8 @@ class UserController {
       message: UserSuccess.GET_ALL_USERS_DONE,
     });
   };
-  // GET ~/expert?page=1&limit=20
+
+  // GET ~/users/expert?page=1&limit=20
   public gelAllExperts = async (req: Request, res: Response) => {
     const dto = req.query;
 
@@ -38,6 +38,12 @@ class UserController {
       success: true,
       message: UserSuccess.GET_ALL_EXPERT_DONE,
     });
+  };
+
+  // GET ~/users/verify/expert
+  public getAllExpertsIsNotverified = async (req: Request, res: Response) => {
+    const experts = await this.userService.getAllExpertsIsNotverified();
+    sendResponse(res, StatusCode.OK, { data: { experts }, success: true });
   };
 
   /**
@@ -101,7 +107,8 @@ class UserController {
       message: "Done",
     });
   };
-    // patch ~/users/accept/:userId
+
+  // PATCH ~/users/accept/userId
   public acceptRequest = async (req: CustomRequest, res: Response) => {
     const userId = new Types.ObjectId(req.params.userId);
     const user = await this.userService.acceptRequest(userId);
@@ -111,18 +118,19 @@ class UserController {
       message: "Done",
     });
   };
-    // patch ~/users/reject/:userId
-public rejectRequest = async (req: CustomRequest, res: Response) => {
-  const userId = new Types.ObjectId(req.params.userId);
 
-  const result = await this.userService.rejectRequest(userId);
+  // PATCH ~/users/reject/userId
+  public rejectRequest = async (req: CustomRequest, res: Response) => {
+    const userId = new Types.ObjectId(req.params.userId);
 
-  sendResponse(res, StatusCode.OK, {
-    data: { result },
-    success: true,
-    message: "Rejected Successfully",
-  });
-};
+    const result = await this.userService.rejectRequest(userId);
+
+    sendResponse(res, StatusCode.OK, {
+      data: { result },
+      success: true,
+      message: "Rejected Successfully",
+    });
+  };
 
   // POST ~/users/update-cv
   public updateCv = async (req: CustomRequest, res: Response) => {
@@ -150,6 +158,7 @@ public rejectRequest = async (req: CustomRequest, res: Response) => {
 
     sendResponse(res, StatusCode.OK, { success: true, message });
   };
+
   // DELETE ~/users/delete-avatar
   public deletedAvatar = async (req: CustomRequest, res: Response) => {
     const userId = new Types.ObjectId(req.user?.id);

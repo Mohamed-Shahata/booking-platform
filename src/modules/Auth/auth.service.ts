@@ -3,6 +3,7 @@ import { StatusCode } from "../../shared/enums/statusCode.enum";
 import AppError from "../../shared/errors/app.error";
 import {
   CloudinaryFolders,
+  Environment,
   UserError,
   ValidationError,
 } from "../../shared/utils/constant";
@@ -22,6 +23,8 @@ import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import { OAuth2Client } from "google-auth-library";
 
 class AuthService {
+  // Create an OAuth2 client instance using Google Auth Library
+  private client = new OAuth2Client(process.env.WEB_CLIENT_ID!);
   /**
    * Registers a new user client by creating an account, generating an OTP,
    * and sending a verification email.
@@ -104,11 +107,13 @@ class AuthService {
     // upload cv file on cloudinary
     const cvUploadedFile = await CloudinaryService.uploadStreamFile(
       cvFile.buffer,
-      CloudinaryFolders.CVS
+      process.env.NODE_ENV === Environment.PRODUCTION
+        ? CloudinaryFolders.CVS
+        : CloudinaryFolders.CVS_DEVELOPMENT
     );
 
     // create a expert profile
-    await ExpertProfile.create({
+    const expertProfile = await ExpertProfile.create({
       userId: user._id,
       specialty,
       aboutYou,
@@ -118,6 +123,9 @@ class AuthService {
         publicId: cvUploadedFile.publicId,
       },
     });
+
+    user.hasExpertProfile = expertProfile._id;
+    await user.save();
 
     // send otp to user email
     mailService.sendVreficationEmail(email, username, otp);
@@ -156,6 +164,13 @@ class AuthService {
       throw new AppError(ValidationError.CODE_IS_WRONG, StatusCode.BAD_REQUEST);
 
     if (user.role === UserRoles.EXPERT) {
+      await user.updateOne({
+        $unset: {
+          verificationCode: 0,
+          verificationCodeExpires: 0,
+          otpSentAt: 0,
+        },
+      });
       return {
         message: "Admin you check you account and aproved it beffor 24 hours",
       };
@@ -166,21 +181,11 @@ class AuthService {
       $unset: {
         verificationCode: 0,
         verificationCodeExpires: 0,
-        resetPasswordToken: 0,
-        resetPasswordExpire: 0,
         otpSentAt: 0,
       },
     });
 
     return { message: "User created successfully" };
-  };
-
-  public getAllExpertsIsNotverified = async () => {
-    const experts = await User.find({
-      role: UserRoles.EXPERT,
-      isVerified: false,
-    });
-    return experts;
   };
 
   /**
@@ -385,21 +390,14 @@ class AuthService {
     // 1. Find the user by email
     const user = await this.findUserByEmail(
       email,
-      ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
+      UserError.USER_NOT_FOUND,
       true
     );
-
-    // 2. Check if the user is verified
-    // if (!user.isVerified)
-    //   throw new AppError(
-    //     UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-    //     StatusCode.BAD_REQUEST
-    //   );
 
     const now = Date.now();
     const FIVE_MINUTES = 5 * 60 * 1000;
 
-    // 3. Check if a code was sent recently
+    // 2. Check if a code was sent recently
     if (user.otpSentAt) {
       const diff = now - new Date(user.otpSentAt).getTime();
 
@@ -412,20 +410,20 @@ class AuthService {
       }
     }
 
-    // 4. Generate a new OTP
+    // 3. Generate a new OTP
     const otp = this.generateOtp();
 
-    // 5. Send the OTP to the user's email
-    await mailService.sendRestPassword(email, user.username, otp);
+    // 4. Send the OTP to the user's email
+    mailService.sendVreficationEmail(email, user.username, otp);
 
-    // 6. Update the user with the new OTP, expiry time, and sent time
+    // 5. Update the user with the new OTP, expiry time, and sent time
     await user.updateOne({
       verificationCode: otp,
       verificationCodeExpires: this.generateExpiryTime(5),
       otpSentAt: new Date(),
     });
 
-    // 7. Return a success message
+    // 6. Return a success message
     return { message: "Verification code resent successfully" };
   };
 
@@ -474,7 +472,6 @@ class AuthService {
   private generateOtp = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
-  private client = new OAuth2Client(process.env.WEB_CLIENT_ID!);
 }
 
 export default AuthService;
