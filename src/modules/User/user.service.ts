@@ -15,6 +15,8 @@ import { UserRoles } from "../../shared/enums/UserRoles.enum";
 import ExpertProfile from "../../DB/model/expertProfile.model";
 import { GetAllExpertDto } from "./dto/getAllExpert.dto";
 import mailService from "../../shared/Mail/mail.service";
+import { getPagination } from "../../shared/utils/pagination";
+import { IReview } from "../Review/review.type";
 
 class UserService {
   constructor() {}
@@ -33,7 +35,7 @@ class UserService {
    */
   public getAllUsers = async (dto: GetAllUserDto): Promise<Array<IUser>> => {
     const { page, limit } = dto;
-    const { limitNumber, skip } = this.getPagination(page, limit);
+    const { limitNumber, skip } = getPagination(page, limit);
 
     const users = await User.find({ isVerified: true })
       .select("username email avatar gender phone")
@@ -59,7 +61,7 @@ class UserService {
    */
   public getAllExpert = async (dto: GetAllExpertDto): Promise<Array<IUser>> => {
     const { page, limit, specialty, rateing, yearsOfExperience } = dto;
-    const { limitNumber, skip } = this.getPagination(page, limit);
+    const { limitNumber, skip } = getPagination(page, limit);
 
     const experts = await User.aggregate([
       {
@@ -427,23 +429,6 @@ class UserService {
     if (!expertProfile)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return expertProfile;
-  };
-
-  /**
-   * Calculates pagination values (limit and skip) from query params.
-   * @param {string} [page] - Current page number.
-   * @param {string} [limit] - Items per page.
-   * @returns {{ limitNumber: number, skip: number }} Pagination data.
-   */
-  private getPagination = (
-    page?: string,
-    limit?: string
-  ): { limitNumber: number; skip: number } => {
-    const pageNumber = page ? parseInt(page) : 1;
-    const limitNumber = limit ? parseInt(limit) : 20;
-    const skip = (pageNumber - 1) * limitNumber;
-
-    return { limitNumber, skip };
   };
 }
 export default UserService;

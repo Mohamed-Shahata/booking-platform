@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import { IReview } from "../../modules/Review/review.type";
+import { ReviewProvider } from "../../modules/Review/review.enum";
 
 const reviewSchema = new Schema<IReview>(
   {
@@ -12,6 +13,11 @@ const reviewSchema = new Schema<IReview>(
       type: Schema.Types.ObjectId,
       ref: "ExpertProfile",
       required: true,
+    },
+    provider: {
+      type: String,
+      enum: ReviewProvider,
+      default: ReviewProvider.SYSTEM,
     },
     text: {
       type: String,
