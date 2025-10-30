@@ -95,6 +95,17 @@ class UserController {
     });
   };
 
+  // GET ~/users/:userId
+  public getTopTenExperts = async (req: Request, res: Response) => {
+    const experts = await this.userService.getTopTenExperts();
+
+    sendResponse(res, StatusCode.OK, {
+      data: { experts },
+      success: true,
+      message: "Done",
+    });
+  };
+
   // GET ~/users/me
   public getMe = async (req: CustomRequest, res: Response) => {
     const userId = new Types.ObjectId(req.user?.id);

@@ -1,5 +1,4 @@
 import e from "express";
-import cookieParser from "cookie-parser";
 import cors from "cors";
 import AuthRouter from "./modules/Auth/auth.route";
 import errorHandler from "./shared/middlewares/errorHandler.middleware";
@@ -15,15 +14,14 @@ app.use(cors(corsOptions));
 const authRoutes = new AuthRouter();
 const userRoutes = new UserRouter();
 
-
 // Middlewares
 app.use(e.json());
 app.use(e.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // Routes
 app.use("/api/v1/auth", authRoutes.router);
 app.use("/api/v1/users", userRoutes.router);
+
 // Error Handler
 app.use(errorHandler);
 

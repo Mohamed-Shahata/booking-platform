@@ -1,6 +1,6 @@
-import * as  dotenv from "dotenv"
-import path from "path"
-dotenv.config({path:path.resolve("./src/config/.env"),debug:false})
+import * as dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve("./src/config/.env"), debug: false });
 import app from "./app";
 import connectionDB from "./DB/connectionDB";
 const PORT = process.env.PORT || 3000;

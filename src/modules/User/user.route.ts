@@ -26,6 +26,12 @@ class UserRouter {
   }
 
   private initRoutes() {
+    // Get ~/users/topTenExperts
+    this.router.get(
+      "/topTenExperts",
+      expressAsyncHandler(this.userController.getTopTenExperts)
+    );
+
     // Get ~/users
     this.router.get(
       "/",
@@ -64,6 +70,12 @@ class UserRouter {
       "/:userId",
       auth,
       expressAsyncHandler(this.userController.getOne)
+    );
+
+    // Get ~/users/topTenExperts
+    this.router.get(
+      "/topTenExperts",
+      expressAsyncHandler(this.userController.getTopTenExperts)
     );
 
     // Patch ~/users/accept/userId
