@@ -47,6 +47,21 @@ const expertProfileSchema = new Schema<IExpertProfile>(
       type: Number,
       default: 0,
     },
+    totalStars: {
+      type: Number,
+      default: 0,
+    },
+    numReviews: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Review",
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );

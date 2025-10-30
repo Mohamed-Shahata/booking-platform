@@ -1,4 +1,5 @@
 import { Document, Types } from "mongoose";
+import { IReview } from "../Review/review.type";
 
 export interface ICV {
   url: string;
@@ -39,5 +40,8 @@ export interface IExpertProfile extends Document {
   cv: ICV;
   aboutYou: string;
   bio?: string | null;
-  rateing?: number;
+  rateing: number;
+  totalStars: number;
+  numReviews: number;
+  reviews: Types.ObjectId[] | IReview[];
 }
