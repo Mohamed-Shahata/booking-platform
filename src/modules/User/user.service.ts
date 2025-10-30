@@ -207,6 +207,24 @@ class UserService {
   };
 
   /**
+   * Retrieves the top 10 experts based on their rating in descending order.
+   *
+   * - Fetches all expert profiles from the database.
+   * - Sorts them by the `rateing` field (highest first).
+   * - Limits the result to 10 experts only.
+   * - Populates the `userId` field to include user information related to each expert.
+   *
+   * @returns {Promise<IExpertProfile[]>} A promise that resolves to an array of the top 10 expert profiles.
+   */
+  public getTopTenExperts = async (): Promise<IExpertProfile[]> => {
+    const experts = await ExpertProfile.find()
+      .sort({ rateing: -1 })
+      .limit(10)
+      .populate("userId");
+    return experts;
+  };
+
+  /**
    * Accept a user's verification request
    *
    * Updates the specified user's account by setting `isVerified` to true.
