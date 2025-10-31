@@ -17,6 +17,7 @@ export const CloudinaryFolders = {
   AVATARS: "avatars",
   CVS: "cvs",
   CVS_DEVELOPMENT: "cvs development",
+  Complaint_SUGGESTIONS: "complaint_suggestions",
 };
 
 export const UserError = {

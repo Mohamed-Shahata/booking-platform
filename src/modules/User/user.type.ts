@@ -6,7 +6,7 @@ export interface ICV {
   publicId: string;
 }
 
-interface IAvatar {
+export interface IAvatar {
   url: string;
   publicId: string | null;
 }

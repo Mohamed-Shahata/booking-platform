@@ -45,6 +45,18 @@ class ReviewController {
       message: "Done",
     });
   };
+   // Get ~/reviews/complaints-suggestions/find
+  public getAllComplaints = async (req: Request, res: Response) => {
+    const dto = req.query; // query params for filtering
+
+    const data = await this.reviewService.getAllComplaints(dto);
+
+    sendResponse(res, StatusCode.OK, {
+      data,
+      success: true,
+      message: "Fetched complaints/suggestions successfully",
+    });
+  };
 
   // Post ~/reviews/create
   public create = async (req: CustomRequest, res: Response) => {
@@ -55,6 +67,21 @@ class ReviewController {
 
     sendResponse(res, StatusCode.CREATED, { message, success: true });
   };
+  // Post ~/complaints-suggestions/create
+public createComplaints = async (req: CustomRequest, res: Response) => {
+  const userId = new Types.ObjectId(req.user?.id);
+  const dto = req.body;
+  const file = req.file; 
+
+  const { message } = await this.reviewService.createComplaintSuggestion(
+    userId,
+    dto,
+    file
+  );
+
+  sendResponse(res, StatusCode.CREATED, { message, success: true });
+};
+
 
   // Delete ~/reviews/delete/:reviewId
   public delete = async (req: CustomRequest, res: Response) => {

@@ -14,11 +14,10 @@ exports.getAllExpertSchema = zod_1.default.object({
             expertProfile_enum_1.ExpertSpecialty.IT,
             expertProfile_enum_1.ExpertSpecialty.MEDICAL,
         ])
-            .default(expertProfile_enum_1.ExpertSpecialty.MEDICAL)
             .optional(),
         yearsOfExperience: zod_1.default.number().min(2).optional(),
         page: zod_1.default.string().optional(),
-        rate: zod_1.default
+        rateing: zod_1.default
             .number({
             error: "Rate must be a number",
         })

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.corsOptions = void 0;
 const statusCode_enum_1 = require("../shared/enums/statusCode.enum");
 const app_error_1 = __importDefault(require("../shared/errors/app.error"));
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = ["https://consultations-phi.vercel.app"];
 exports.corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
