@@ -17,12 +17,15 @@ exports.Environment = {
 exports.CloudinaryFolders = {
     AVATARS: "avatars",
     CVS: "cvs",
+    CVS_DEVELOPMENT: "cvs development",
+    Complaint_SUGGESTIONS: "complaint_suggestions",
 };
 exports.UserError = {
     USER_ACCOUNT_IS_VERIFIED: "User acount is verified",
     USER_NOT_FOUND: "User not found",
     USER_ALREADY_EXSITS: "User already exsits",
     USER_ACCOUNT_IS_NOT_VERIFIED: "User account isn't verified",
+    USER_ACCOUNT_IS_NOT_VERIFIED_CODE: "User account isn't verified code",
 };
 exports.ValidationError = {
     CODE_EXPIRED: "Code expired",

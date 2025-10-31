@@ -8,6 +8,13 @@ import { getPagination } from "../../shared/utils/pagination";
 import { ReviewProvider } from "./review.enum";
 import { IReview } from "./review.type";
 import { GetAllReviewDto } from "./dto/getAll";
+import { CreateComplaintSuggestionDto } from "./dto/createcomplaintOrSuggestion.dto";
+import ComplaintSuggestion from "../../DB/model/complaintSuggestion.model";
+import { CloudinaryFolders } from "../../shared/utils/constant";
+import CloudinaryService from "../../shared/services/cloudinary.service";
+import { ComplaintType } from "./complaintSuggestion.enum";
+import { FindComplaintSuggestionDto } from "./dto/getComplaintSuggestion.dto";
+
 
 class ReviewService {
   /**
@@ -140,6 +147,51 @@ class ReviewService {
 
     return { message: "Deleted review successfully" };
   };
+
+  /**
+   * Create a new complaint or suggestion
+   */
+  public createComplaintSuggestion = async (
+    userId: Types.ObjectId,
+    dto: CreateComplaintSuggestionDto,
+    file?: Express.Multer.File
+  ): Promise<{ message: string }> => {
+    const { type, subject, message } = dto;
+    let image;
+    if (file) {
+        const uploadResult = await CloudinaryService.uploadImage(
+              file.path,
+              CloudinaryFolders.Complaint_SUGGESTIONS
+            );
+      image = {
+      url: uploadResult.url,
+      publicId: uploadResult.publicId,
+    };
+    }
+    await ComplaintSuggestion.create({
+      userId,
+      type,
+      subject,
+      message,
+    ...(image && { image }),
+    });
+
+    return { message: "Created a new complaint/suggestion successfully" };
+  };
+
+  public getAllComplaints = async (dto: FindComplaintSuggestionDto) => {
+    const { type, userId } = dto;
+    const filter: any = {};
+    if (type) filter.type = type;
+    if (userId) filter.userId = new Types.ObjectId(userId);
+    return ComplaintSuggestion.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+  };
+
+  // public getByUser = async (userId: Types.ObjectId) => {
+  //   return ComplaintSuggestion.find({ userId }).sort({ createdAt: -1 });
+  // };
 }
 
 export default ReviewService;

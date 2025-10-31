@@ -70,10 +70,6 @@ class AuthController {
             const { message } = yield this.authService.verifyEmail(dto);
             (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, { data: { message }, success: true });
         });
-        this.getAllExpertsIsNotverified = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const experts = yield this.authService.getAllExpertsIsNotverified();
-            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, { data: { experts }, success: true });
-        });
         /**
          * dto is => Validation data is {email , password}
          * POST ~/auth/login
@@ -147,7 +143,7 @@ class AuthController {
         });
         /**
          * dto is => Validation data is {email}
-         * POST ~/auth/forgetPassword
+         * POST ~/auth/resendCode
          *
          * example
          * {

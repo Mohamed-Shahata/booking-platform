@@ -6,6 +6,7 @@ import validate from "../../shared/middlewares/validation.middleware";
 import { createReviewSchema } from "./dto/create.dto";
 import { getAllReviewSchema } from "./dto/getAll";
 import expressAsyncHandler from "express-async-handler";
+import { uploadFile } from "../../shared/middlewares/multer.middleware";
 
 class ReviewRouter {
   router = Router();
@@ -38,7 +39,12 @@ class ReviewRouter {
       auth,
       expressAsyncHandler(this.reviewController.getReviewsOneExpert)
     );
-
+      // Get ~/reviews/complaints-suggestions/find
+    this.router.get(
+      "/complaints-suggestions/find",
+      auth,
+      expressAsyncHandler(this.reviewController.getAllComplaints)
+    );
     // POST ~/reviews/create
     this.router.post(
       "/create",
@@ -47,7 +53,13 @@ class ReviewRouter {
       authRoles(UserRoles.ADMIN, UserRoles.CLIENT),
       expressAsyncHandler(this.reviewController.create)
     );
-
+    // Post ~/create/complaints-suggestions
+    this.router.post(
+  "/create/complaints-suggestions",
+  auth,
+  uploadFile.single("image"),
+  expressAsyncHandler(this.reviewController.createComplaints)
+);
     // DELETE ~/reviews/delete/:reviewId
     this.router.delete(
       "/delete/:reviewId",

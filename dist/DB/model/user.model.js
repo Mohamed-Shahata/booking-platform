@@ -81,9 +81,6 @@ const userSchema = new mongoose_1.Schema({
         type: Date,
         default: null,
     },
-    resetPasswordExpire: {
-        type: Date,
-    },
     role: {
         type: String,
         enum: UserRoles_enum_1.UserRoles,

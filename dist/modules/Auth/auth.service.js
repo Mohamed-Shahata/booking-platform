@@ -57,6 +57,8 @@ const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
 const google_auth_library_1 = require("google-auth-library");
 class AuthService {
     constructor() {
+        // Create an OAuth2 client instance using Google Auth Library
+        this.client = new google_auth_library_1.OAuth2Client(process.env.WEB_CLIENT_ID);
         /**
          * Registers a new user client by creating an account, generating an OTP,
          * and sending a verification email.
@@ -111,9 +113,11 @@ class AuthService {
                 verificationCodeExpires: this.generateExpiryTime(5),
             });
             // upload cv file on cloudinary
-            const cvUploadedFile = yield cloudinary_service_1.default.uploadStreamFile(cvFile.buffer, constant_1.CloudinaryFolders.CVS);
+            const cvUploadedFile = yield cloudinary_service_1.default.uploadStreamFile(cvFile.buffer, process.env.NODE_ENV === constant_1.Environment.PRODUCTION
+                ? constant_1.CloudinaryFolders.CVS
+                : constant_1.CloudinaryFolders.CVS_DEVELOPMENT);
             // create a expert profile
-            yield expertProfile_model_1.default.create({
+            const expertProfile = yield expertProfile_model_1.default.create({
                 userId: user._id,
                 specialty,
                 aboutYou,
@@ -123,6 +127,8 @@ class AuthService {
                     publicId: cvUploadedFile.publicId,
                 },
             });
+            user.hasExpertProfile = expertProfile._id;
+            yield user.save();
             // send otp to user email
             mail_service_1.default.sendVreficationEmail(email, username, otp);
             return {
@@ -146,6 +152,13 @@ class AuthService {
             if (user.verificationCode !== code)
                 throw new app_error_1.default(constant_1.ValidationError.CODE_IS_WRONG, statusCode_enum_1.StatusCode.BAD_REQUEST);
             if (user.role === UserRoles_enum_1.UserRoles.EXPERT) {
+                yield user.updateOne({
+                    $unset: {
+                        verificationCode: 0,
+                        verificationCodeExpires: 0,
+                        otpSentAt: 0,
+                    },
+                });
                 return {
                     message: "Admin you check you account and aproved it beffor 24 hours",
                 };
@@ -155,19 +168,10 @@ class AuthService {
                 $unset: {
                     verificationCode: 0,
                     verificationCodeExpires: 0,
-                    resetPasswordToken: 0,
-                    resetPasswordExpire: 0,
                     otpSentAt: 0,
                 },
             });
             return { message: "User created successfully" };
-        });
-        this.getAllExpertsIsNotverified = () => __awaiter(this, void 0, void 0, function* () {
-            const experts = yield user_model_1.default.find({
-                role: UserRoles_enum_1.UserRoles.EXPERT,
-                isVerified: false,
-            });
-            return experts;
         });
         /**
          * Authenticates a user using a Google ID token.
@@ -313,16 +317,10 @@ class AuthService {
         this.resendCode = (dto) => __awaiter(this, void 0, void 0, function* () {
             const { email } = dto;
             // 1. Find the user by email
-            const user = yield this.findUserByEmail(email, constant_1.ValidationError.EMAIL_OR_PASSWORD_IS_WRONG, true);
-            // 2. Check if the user is verified
-            // if (!user.isVerified)
-            //   throw new AppError(
-            //     UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-            //     StatusCode.BAD_REQUEST
-            //   );
+            const user = yield this.findUserByEmail(email, constant_1.UserError.USER_NOT_FOUND, true);
             const now = Date.now();
             const FIVE_MINUTES = 5 * 60 * 1000;
-            // 3. Check if a code was sent recently
+            // 2. Check if a code was sent recently
             if (user.otpSentAt) {
                 const diff = now - new Date(user.otpSentAt).getTime();
                 if (diff < FIVE_MINUTES) {
@@ -330,17 +328,17 @@ class AuthService {
                     throw new app_error_1.default(`Please wait ${remaining} minute(s) before requesting another code.`, statusCode_enum_1.StatusCode.BAD_REQUEST);
                 }
             }
-            // 4. Generate a new OTP
+            // 3. Generate a new OTP
             const otp = this.generateOtp();
-            // 5. Send the OTP to the user's email
-            yield mail_service_1.default.sendRestPassword(email, user.username, otp);
-            // 6. Update the user with the new OTP, expiry time, and sent time
+            // 4. Send the OTP to the user's email
+            mail_service_1.default.sendVreficationEmail(email, user.username, otp);
+            // 5. Update the user with the new OTP, expiry time, and sent time
             yield user.updateOne({
                 verificationCode: otp,
                 verificationCodeExpires: this.generateExpiryTime(5),
                 otpSentAt: new Date(),
             });
-            // 7. Return a success message
+            // 6. Return a success message
             return { message: "Verification code resent successfully" };
         });
         /**
@@ -378,7 +376,6 @@ class AuthService {
         this.generateOtp = () => {
             return Math.floor(100000 + Math.random() * 900000).toString();
         };
-        this.client = new google_auth_library_1.OAuth2Client(process.env.WEB_CLIENT_ID);
     }
 }
 exports.default = AuthService;

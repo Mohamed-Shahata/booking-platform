@@ -53,6 +53,7 @@ const cloudinary_service_1 = __importDefault(require("../../shared/services/clou
 const UserRoles_enum_1 = require("../../shared/enums/UserRoles.enum");
 const expertProfile_model_1 = __importDefault(require("../../DB/model/expertProfile.model"));
 const mail_service_1 = __importDefault(require("../../shared/Mail/mail.service"));
+const pagination_1 = require("../../shared/utils/pagination");
 class UserService {
     constructor() {
         /**
@@ -69,7 +70,7 @@ class UserService {
          */
         this.getAllUsers = (dto) => __awaiter(this, void 0, void 0, function* () {
             const { page, limit } = dto;
-            const { limitNumber, skip } = this.getPagination(page, limit);
+            const { limitNumber, skip } = (0, pagination_1.getPagination)(page, limit);
             const users = yield user_model_1.default.find({ isVerified: true })
                 .select("username email avatar gender phone")
                 .limit(limitNumber)
@@ -78,31 +79,75 @@ class UserService {
             return users;
         });
         /**
-           * Get all experts with optional filters and pagination (for Flutter)
-           *
-           * Retrieves a paginated list of experts filtered by specialty, rate, and years of experience.
-           * Populates the `userId` field to include basic user data (username, avatar).
-           *
-           * @param dto - The filter and pagination data (page, limit, specialty, rate, yearsOfExperience)
-           * @returns A list of expert profiles matching the provided filters
-           *
-           * Example:
-           *  page = 1, limit = 10, specialty = "Cardiology", rate = 4.5
-           *  → returns up to 10 cardiologists with a 4.5 rating or higher
-           */
+         * Get all experts with optional filters and pagination (for Flutter)
+         *
+         * Retrieves a paginated list of experts filtered by specialty, rate, and years of experience.
+         * Populates the `userId` field to include basic user data (username, avatar).
+         *
+         * @param dto - The filter and pagination data (page, limit, specialty, rate, yearsOfExperience)
+         * @returns A list of expert profiles matching the provided filters
+         *
+         * Example:
+         *  page = 1, limit = 10, specialty = "Cardiology", rate = 4.5
+         *  → returns up to 10 cardiologists with a 4.5 rating or higher
+         */
         this.getAllExpert = (dto) => __awaiter(this, void 0, void 0, function* () {
-            const { page, limit, specialty, rate, yearsOfExperience } = dto;
-            const { limitNumber, skip } = this.getPagination(page, limit);
-            const experts = yield expertProfile_model_1.default.find({
-                yearsOfExperience,
-                specialty,
-                rateing: rate,
+            const { page, limit, specialty, rateing, yearsOfExperience } = dto;
+            const { limitNumber, skip } = (0, pagination_1.getPagination)(page, limit);
+            const experts = yield user_model_1.default.aggregate([
+                {
+                    $match: {
+                        isVerified: true,
+                        role: UserRoles_enum_1.UserRoles.EXPERT,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "expertprofiles",
+                        localField: "hasExpertProfile",
+                        foreignField: "_id",
+                        as: "expertProfile",
+                    },
+                },
+                {
+                    $unwind: "$expertProfile",
+                },
+                {
+                    $match: Object.assign(Object.assign(Object.assign({}, (specialty && { "expertProfile.specialty": specialty })), (yearsOfExperience && {
+                        "expertProfile.yearsOfExperience": {
+                            $gte: Number(yearsOfExperience),
+                        },
+                    })), (rateing && {
+                        "expertProfile.rateing": { $gte: Number(rateing) },
+                    })),
+                },
+                {
+                    $project: {
+                        username: 1,
+                        avatar: 1,
+                        "expertProfile.specialty": 1,
+                        "expertProfile.rateing": 1,
+                        "expertProfile.yearsOfExperience": 1,
+                        "expertProfile.bio": 1,
+                    },
+                },
+                { $skip: skip },
+                { $limit: limitNumber },
+            ]);
+            return experts;
+        });
+        /**
+         * Retrieves all expert users who are not verified.
+         *
+         * @returns {Promise<User[]>} List of unverified expert users.
+         */
+        this.getAllExpertsIsNotverified = () => __awaiter(this, void 0, void 0, function* () {
+            const experts = yield user_model_1.default.find({
+                role: UserRoles_enum_1.UserRoles.EXPERT,
+                isVerified: false,
             })
-                .populate("userId", "username avatar")
-                .select("specialty yearsOfExperience bio rateing")
-                .limit(limitNumber)
-                .skip(skip)
-                .exec();
+                .select("-password")
+                .populate("hasExpertProfile");
             return experts;
         });
         /**
@@ -165,43 +210,76 @@ class UserService {
             return user;
         });
         /**
-       * Accept a user's verification request
-       *
-       * Updates the specified user's account by setting `isVerified` to true.
-       *
-       * @param userId - The ObjectId of the user to verify
-       * @returns A success message if the user was updated
-       */
+         * Retrieves the top 10 experts based on their rating in descending order.
+         *
+         * - Fetches all expert profiles from the database.
+         * - Sorts them by the `rateing` field (highest first).
+         * - Limits the result to 10 experts only.
+         * - Populates the `userId` field to include user information related to each expert.
+         *
+         * @returns {Promise<IExpertProfile[]>} A promise that resolves to an array of the top 10 expert profiles.
+         */
+        this.getTopTenExperts = () => __awaiter(this, void 0, void 0, function* () {
+            const experts = yield expertProfile_model_1.default.find()
+                .sort({ rateing: -1 })
+                .limit(10)
+                .populate("userId");
+            return experts;
+        });
+        /**
+         * Accept a user's verification request
+         *
+         * Updates the specified user's account by setting `isVerified` to true.
+         *
+         * @param userId - The ObjectId of the user to verify
+         * @returns A success message if the user was updated
+         */
         this.acceptRequest = (userId) => __awaiter(this, void 0, void 0, function* () {
             const user = yield user_model_1.default.findOneAndUpdate({ _id: userId }, { $set: { isVerified: true } }, { new: true });
             if (!user) {
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             }
-            yield mail_service_1.default.verifyAcceptEmail(user.email, user.username);
+            if (user.verificationCode) {
+                throw new app_error_1.default(constant_1.UserError.USER_ACCOUNT_IS_NOT_VERIFIED_CODE, statusCode_enum_1.StatusCode.BAD_REQUEST);
+            }
+            mail_service_1.default.verifyAcceptEmail(user.email, user.username);
             return { message: "Accepted Successfully" };
         });
         /**
-       * Reject a user's verification request
-       *
-       * Sends a rejection email to the user, deletes their expert profile,
-       * and removes their account from the database.
-       *
-       * @param userId - The ObjectId of the user to reject
-       * @returns A success message after rejection and cleanup
-       */
+         * Reject a user's verification request
+         *
+         * Sends a rejection email to the user, deletes their expert profile,
+         * and removes their account from the database.
+         *
+         * @param userId - The ObjectId of the user to reject
+         * @returns A success message after rejection and cleanup
+         */
         this.rejectRequest = (userId) => __awaiter(this, void 0, void 0, function* () {
             const user = yield user_model_1.default.findById(userId);
             if (!user) {
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             }
+            if (user.verificationCode) {
+                throw new app_error_1.default(constant_1.UserError.USER_ACCOUNT_IS_NOT_VERIFIED_CODE, statusCode_enum_1.StatusCode.BAD_REQUEST);
+            }
             const expertProfile = yield expertProfile_model_1.default.findOne({ userId });
             if (expertProfile) {
                 yield expertProfile_model_1.default.deleteOne({ _id: expertProfile._id });
             }
-            mail_service_1.default.verifyRejectEmail(user.email, user.username);
             yield user_model_1.default.deleteOne({ _id: userId });
+            mail_service_1.default.verifyRejectEmail(user.email, user.username);
             return { message: "Rejected Successfully and user deleted" };
         });
+        /**
+         * Updates the expert's CV file.
+         * - Deletes the old CV from Cloudinary.
+         * - Uploads the new CV.
+         * - Updates the user's expert profile with the new CV details.
+         *
+         * @param {Types.ObjectId} userId - The user's ObjectId.
+         * @param {Express.Multer.File} file - The uploaded CV file.
+         * @returns {Promise<{ message: string }>} Success message.
+         */
         this.updatedCv = (userId, file) => __awaiter(this, void 0, void 0, function* () {
             const userExpertProfile = yield this.getOneExpertProfile(userId);
             yield cloudinary_service_1.default.deleteImageOrFile(userExpertProfile.cv.publicId);
@@ -274,23 +352,23 @@ class UserService {
          * @returns The found user document
          */
         this.getOneUser = (id) => __awaiter(this, void 0, void 0, function* () {
-            const user = yield user_model_1.default.findById(id);
+            const user = yield user_model_1.default.findById(id).populate("hasExpertProfile");
             if (!user)
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             return user;
         });
+        /**
+         * Fetches a single expert profile by user ID.
+         * @param {Types.ObjectId} id - The user's ObjectId.
+         * @returns {Promise<IExpertProfile>} The expert profile document.
+         * @throws {AppError} If no profile is found.
+         */
         this.getOneExpertProfile = (id) => __awaiter(this, void 0, void 0, function* () {
             const expertProfile = yield expertProfile_model_1.default.findOne({ userId: id });
             if (!expertProfile)
                 throw new app_error_1.default(constant_1.UserError.USER_NOT_FOUND, statusCode_enum_1.StatusCode.NOT_FOUND);
             return expertProfile;
         });
-        this.getPagination = (page, limit) => {
-            const pageNumber = page ? parseInt(page) : 1;
-            const limitNumber = limit ? parseInt(limit) : 20;
-            const skip = (pageNumber - 1) * limitNumber;
-            return { limitNumber, skip };
-        };
     }
 }
 exports.default = UserService;

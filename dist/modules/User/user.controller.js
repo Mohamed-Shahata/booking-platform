@@ -30,7 +30,7 @@ class UserController {
                 message: constant_1.UserSuccess.GET_ALL_USERS_DONE,
             });
         });
-        // GET ~/expert?page=1&limit=20
+        // GET ~/users/expert?page=1&limit=20
         this.gelAllExperts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const dto = req.query;
             const users = yield this.userService.getAllExpert(dto);
@@ -39,6 +39,11 @@ class UserController {
                 success: true,
                 message: constant_1.UserSuccess.GET_ALL_EXPERT_DONE,
             });
+        });
+        // GET ~/users/verify/expert
+        this.getAllExpertsIsNotverified = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const experts = yield this.userService.getAllExpertsIsNotverified();
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, { data: { experts }, success: true });
         });
         /**
          * dto is => Validation data is {username, phone, gender}
@@ -82,6 +87,15 @@ class UserController {
                 message: "Done",
             });
         });
+        // GET ~/users/:userId
+        this.getTopTenExperts = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const experts = yield this.userService.getTopTenExperts();
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, {
+                data: { experts },
+                success: true,
+                message: "Done",
+            });
+        });
         // GET ~/users/me
         this.getMe = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
@@ -93,7 +107,7 @@ class UserController {
                 message: "Done",
             });
         });
-        // patch ~/users/accept/:userId
+        // PATCH ~/users/accept/userId
         this.acceptRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const userId = new mongoose_1.Types.ObjectId(req.params.userId);
             const user = yield this.userService.acceptRequest(userId);
@@ -103,7 +117,7 @@ class UserController {
                 message: "Done",
             });
         });
-        // patch ~/users/reject/:userId
+        // PATCH ~/users/reject/userId
         this.rejectRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const userId = new mongoose_1.Types.ObjectId(req.params.userId);
             const result = yield this.userService.rejectRequest(userId);

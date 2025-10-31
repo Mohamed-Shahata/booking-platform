@@ -36,10 +36,27 @@ const expertProfileSchema = new mongoose_1.Schema({
     },
     bio: {
         type: String,
+        default: "",
     },
     rateing: {
         type: Number,
+        default: 0,
     },
+    totalStars: {
+        type: Number,
+        default: 0,
+    },
+    numReviews: {
+        type: Number,
+        default: 0,
+    },
+    reviews: [
+        {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: "Review",
+            required: true,
+        },
+    ],
 }, { timestamps: true });
 const ExpertProfile = (0, mongoose_1.model)("ExpertProfile", expertProfileSchema);
 exports.default = ExpertProfile;
