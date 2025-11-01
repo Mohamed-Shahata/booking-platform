@@ -158,11 +158,24 @@ class ReviewService {
   ): Promise<{ message: string }> => {
     const { type, subject, message } = dto;
     let image;
-    if (file) {
-        const uploadResult = await CloudinaryService.uploadImage(
-              file.path,
-              CloudinaryFolders.Complaint_SUGGESTIONS
-            );
+    
+if (file) {
+    let uploadResult;
+    if (file.path) {
+      uploadResult = await CloudinaryService.uploadImage(
+        file.path,
+        CloudinaryFolders.Complaint_SUGGESTIONS
+      );
+    } 
+    else if (file.buffer) {
+      uploadResult = await CloudinaryService.uploadStreamFile(
+        file.buffer,
+        CloudinaryFolders.Complaint_SUGGESTIONS
+      );
+    } 
+    else {
+      throw new AppError("Invalid file upload", StatusCode.BAD_REQUEST);
+    }
       image = {
       url: uploadResult.url,
       publicId: uploadResult.publicId,
