@@ -137,6 +137,59 @@ class UserService {
             return experts;
         });
         /**
+       * Get verified experts with optional filters and pagination
+       *
+       * Retrieves a paginated list of verified experts filtered by specialty, username, and email.
+       * Joins each expert with their corresponding expert profile to include additional data
+       * such as specialty, rating, years of experience, and bio.
+       *
+       * @param dto - The query data containing optional filters and pagination parameters
+       *              (page, limit, specialty, username, email)
+       * @returns A paginated list of experts with their profile details
+       *
+       * Example:
+       *  page = 1, limit = 10, specialty = "IT", username = "rashad"
+       *  → returns up to 10 verified IT experts whose username matches "rashad"
+       */
+        this.getExpert = (dto) => __awaiter(this, void 0, void 0, function* () {
+            const { page, limit, specialty, username, email } = dto;
+            const { limitNumber, skip } = (0, pagination_1.getPagination)(page, limit);
+            const experts = yield user_model_1.default.aggregate([
+                {
+                    $match: {
+                        isVerified: true,
+                        role: UserRoles_enum_1.UserRoles.EXPERT,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "expertprofiles",
+                        localField: "hasExpertProfile",
+                        foreignField: "_id",
+                        as: "expertProfile",
+                    },
+                },
+                { $unwind: "$expertProfile" },
+                {
+                    $match: Object.assign(Object.assign(Object.assign({}, (specialty && { "expertProfile.specialty": specialty })), (username && { username: { $regex: username, $options: "i" } })), (email && { email: { $regex: email, $options: "i" } })),
+                },
+                {
+                    $project: {
+                        username: 1,
+                        avatar: 1,
+                        email: 1,
+                        "expertProfile.specialty": 1,
+                        "expertProfile.rateing": 1,
+                        "expertProfile.yearsOfExperience": 1,
+                        "expertProfile.bio": 1,
+                    },
+                },
+                { $skip: skip },
+                { $limit: limitNumber },
+            ]);
+            return experts;
+        });
+        /**
          * Retrieves all expert users who are not verified.
          *
          * @returns {Promise<User[]>} List of unverified expert users.

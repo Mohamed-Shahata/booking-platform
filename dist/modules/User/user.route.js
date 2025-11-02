@@ -44,6 +44,8 @@ class UserRouter {
         this.router.delete("/", auth_middleware_1.auth, auth_middleware_1.isAccount, (0, express_async_handler_1.default)(this.userController.delete));
         // Post ~/users/upload-cv
         this.router.post("/upload-cv", auth_middleware_1.auth, multer_middleware_1.uploadFile.single("cv"), (0, express_async_handler_1.default)(this.userController.updateCv));
+        //Get ~/users/expert/search?page=1&limit=20&username=abc
+        this.router.get("/expert/search", (0, validation_middleware_1.default)(getAllExpert_dto_1.getAllExpertSchema), (0, express_async_handler_1.default)(this.userController.getOneExpert));
         // Post ~/users/upload-avatar
         this.router.post("/upload-avatar", auth_middleware_1.auth, multer_middleware_1.uploadImage.single("avatar"), (0, express_async_handler_1.default)(this.userController.uploadAndUpdateAvatar));
         // Delete ~/users/delete-avatar

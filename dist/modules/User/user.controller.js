@@ -40,6 +40,16 @@ class UserController {
                 message: constant_1.UserSuccess.GET_ALL_EXPERT_DONE,
             });
         });
+        // GET ~/users/expert/search?page=1&limit=20
+        this.getOneExpert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const dto = req.query;
+            const expert = yield this.userService.getExpert(dto);
+            (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.OK, {
+                data: { expert },
+                success: true,
+                message: "Done",
+            });
+        });
         // GET ~/users/verify/expert
         this.getAllExpertsIsNotverified = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const experts = yield this.userService.getAllExpertsIsNotverified();
