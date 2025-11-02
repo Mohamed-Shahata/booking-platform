@@ -62,7 +62,7 @@ class ReviewController {
             const { message } = yield this.reviewService.create(userId, dto);
             (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.CREATED, { message, success: true });
         });
-        // Post ~/complaints-suggestions/create
+        // Post ~create/complaints-suggestions/
         this.createComplaints = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             const userId = new mongoose_1.Types.ObjectId((_a = req.user) === null || _a === void 0 ? void 0 : _a.id);

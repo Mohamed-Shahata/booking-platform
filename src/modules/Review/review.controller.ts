@@ -67,7 +67,7 @@ class ReviewController {
 
     sendResponse(res, StatusCode.CREATED, { message, success: true });
   };
-  // Post ~/complaints-suggestions/create
+  // Post ~create/complaints-suggestions/
 public createComplaints = async (req: CustomRequest, res: Response) => {
   const userId = new Types.ObjectId(req.user?.id);
   const dto = req.body;

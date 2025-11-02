@@ -129,7 +129,16 @@ class ReviewService {
             const { type, subject, message } = dto;
             let image;
             if (file) {
-                const uploadResult = yield cloudinary_service_1.default.uploadImage(file.path, constant_1.CloudinaryFolders.Complaint_SUGGESTIONS);
+                let uploadResult;
+                if (file.path) {
+                    uploadResult = yield cloudinary_service_1.default.uploadImage(file.path, constant_1.CloudinaryFolders.Complaint_SUGGESTIONS);
+                }
+                else if (file.buffer) {
+                    uploadResult = yield cloudinary_service_1.default.uploadStreamFile(file.buffer, constant_1.CloudinaryFolders.Complaint_SUGGESTIONS);
+                }
+                else {
+                    throw new app_error_1.default("Invalid file upload", statusCode_enum_1.StatusCode.BAD_REQUEST);
+                }
                 image = {
                     url: uploadResult.url,
                     publicId: uploadResult.publicId,
