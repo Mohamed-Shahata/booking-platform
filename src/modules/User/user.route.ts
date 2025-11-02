@@ -118,6 +118,12 @@ class UserRouter {
       uploadFile.single("cv"),
       expressAsyncHandler(this.userController.updateCv)
     );
+    //Get ~/users/expert/search?page=1&limit=20&username=abc
+    this.router.get(
+      "/expert/search",
+      validate(getAllExpertSchema),
+      expressAsyncHandler(this.userController.getOneExpert)
+    );
 
     // Post ~/users/upload-avatar
     this.router.post(
