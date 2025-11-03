@@ -43,6 +43,10 @@ const expertProfileSchema = new Schema<IExpertProfile>(
       type: String,
       default: "",
     },
+    wallet: {
+      type: Number,
+      default: 0,
+    },
     rateing: {
       type: Number,
       default: 0,

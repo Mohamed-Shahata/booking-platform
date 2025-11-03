@@ -42,6 +42,7 @@ export interface IExpertProfile extends Document {
   bio?: string | null;
   rateing: number;
   totalStars: number;
+  wallet: number;
   numReviews: number;
   reviews: Types.ObjectId[] | IReview[];
 }

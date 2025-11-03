@@ -24,14 +24,24 @@ const storage = multer.diskStorage({
 /**
  * File filter to allow only image types
  */
-const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
-  const allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/jpg",
-    "image/webp",
-    "application/pdf",
-  ];
+const fileFilterImage = (req: any, file: Express.Multer.File, cb: any) => {
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+  if (!allowedTypes.includes(file.mimetype))
+    return cb(
+      new AppError(
+        "Only image files are allowed (jpg, png, webp)",
+        StatusCode.BAD_REQUEST
+      ),
+      false
+    );
+  cb(null, true);
+};
+
+/**
+ * File filter to allow only pdf files types
+ */
+const fileFilterFile = (req: any, file: Express.Multer.File, cb: any) => {
+  const allowedTypes = ["application/pdf"];
   if (!allowedTypes.includes(file.mimetype))
     return cb(
       new AppError(
@@ -51,7 +61,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
  */
 export const uploadImage = multer({
   storage,
-  fileFilter,
+  fileFilter: fileFilterImage,
   limits: { fieldSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
@@ -63,6 +73,6 @@ export const uploadImage = multer({
  */
 export const uploadFile = multer({
   storage: multer.memoryStorage(),
-  fileFilter,
+  fileFilter: fileFilterFile,
   limits: { fieldSize: 5 * 1024 * 1024 }, // 5 MB
 });
