@@ -48,20 +48,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 dotenv.config({ path: path_1.default.resolve("./src/config/.env"), debug: false });
+const http_1 = require("http");
+const socket_io_1 = require("socket.io");
 const app_1 = __importDefault(require("./app"));
 const connectionDB_1 = __importDefault(require("./DB/connectionDB"));
+const sessionFinalizer_1 = require("./jobs/sessionFinalizer");
+const deleteExpiredUser_job_1 = require("./jobs/deleteExpiredUser.job");
+const chat_socket_1 = require("./modules/Chat/chat.socket");
 const PORT = process.env.PORT || 3000;
+const server = (0, http_1.createServer)(app_1.default);
+const io = new socket_io_1.Server(server, {
+    cors: { origin: "*" },
+});
+io.on("connection", (socket) => {
+    console.log("✅ [Socket.io] New client connected:", socket.id);
+    (0, chat_socket_1.registerChatHandlers)(io, socket);
+    socket.on("disconnect", () => {
+        console.log("❌ [Socket.io] Client disconnected:", socket.id);
+    });
+});
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // 1) Connect MongoDB
-            (0, connectionDB_1.default)();
+            yield (0, connectionDB_1.default)();
             console.log("1 - ✅ MongoDB connected successfully");
-            // 2) Start Server
-            app_1.default.listen(PORT, () => console.log(`2 - ✅ Server is live on port ${PORT}`));
+            (0, deleteExpiredUser_job_1.deletetionExpiredUser)();
+            console.log(`2 - ✅ Job cron deleteion user`);
+            (0, sessionFinalizer_1.startSessionFinalizer)();
+            console.log(`3 - ✅ Start job cron sessions`);
+            server.listen(PORT, () => {
+                console.log(`🚀 Server & Socket.io running on port ${PORT}`);
+            });
         }
         catch (err) {
-            console.log("Faild start server: ", err);
+            console.log("Failed to start server: ", err);
             process.exit(1);
         }
     });

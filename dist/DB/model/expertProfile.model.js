@@ -38,6 +38,10 @@ const expertProfileSchema = new mongoose_1.Schema({
         type: String,
         default: "",
     },
+    wallet: {
+        type: Number,
+        default: 0,
+    },
     rateing: {
         type: Number,
         default: 0,

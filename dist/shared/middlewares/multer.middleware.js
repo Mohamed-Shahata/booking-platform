@@ -27,14 +27,17 @@ const storage = multer_1.default.diskStorage({
 /**
  * File filter to allow only image types
  */
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/jpg",
-        "image/webp",
-        "application/pdf",
-    ];
+const fileFilterImage = (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (!allowedTypes.includes(file.mimetype))
+        return cb(new app_error_1.default("Only image files are allowed (jpg, png, webp)", statusCode_enum_1.StatusCode.BAD_REQUEST), false);
+    cb(null, true);
+};
+/**
+ * File filter to allow only pdf files types
+ */
+const fileFilterFile = (req, file, cb) => {
+    const allowedTypes = ["application/pdf"];
     if (!allowedTypes.includes(file.mimetype))
         return cb(new app_error_1.default("Only image files are allowed (jpg, png, webp)", statusCode_enum_1.StatusCode.BAD_REQUEST), false);
     cb(null, true);
@@ -47,7 +50,7 @@ const fileFilter = (req, file, cb) => {
  */
 exports.uploadImage = (0, multer_1.default)({
     storage,
-    fileFilter,
+    fileFilter: fileFilterImage,
     limits: { fieldSize: 5 * 1024 * 1024 }, // 5 MB
 });
 /**
@@ -58,6 +61,6 @@ exports.uploadImage = (0, multer_1.default)({
  */
 exports.uploadFile = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
-    fileFilter,
+    fileFilter: fileFilterFile,
     limits: { fieldSize: 5 * 1024 * 1024 }, // 5 MB
 });

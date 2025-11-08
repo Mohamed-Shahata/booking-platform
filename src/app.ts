@@ -47,5 +47,11 @@ app.use(errorHandler);
 
 // Swagger UI
 setupSwagger(app);
-
+// Invalid route handler (404)
+app.all(/.*/, (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Can't find ${req.originalUrl} on this server 🚫`,
+  });
+});
 export default app;
