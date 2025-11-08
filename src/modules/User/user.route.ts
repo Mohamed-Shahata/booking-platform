@@ -25,14 +25,52 @@ class UserRouter {
     this.initRoutes();
   }
 
+  /**
+   * @swagger
+   * tags:
+   *   name: Users
+   *   description: Operations related to users and experts, including profile management, CV/avatar uploads, expert verification, and user searches
+   */
   private initRoutes() {
-    // Get ~/users/topTenExperts
+    /**
+     * @swagger
+     * /users/topTenExperts:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get top 10 experts
+     *     responses:
+     *       200:
+     *         description: Top 10 experts fetched successfully
+     */
     this.router.get(
       "/topTenExperts",
       expressAsyncHandler(this.userController.getTopTenExperts)
     );
 
-    // Get ~/users
+    /**
+     * @swagger
+     * /users:
+     *   get:
+     *     summary: Get all users (Admin only)
+     *     tags: [Users]
+     *     security:
+     *       - BearerAuth: []
+     *     parameters:
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: integer
+     *           example: 1
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *           example: 20
+     *     responses:
+     *       200:
+     *         description: List of users retrieved successfully
+     */
     this.router.get(
       "/",
       validate(getAllUserSchema),
@@ -41,7 +79,40 @@ class UserRouter {
       expressAsyncHandler(this.userController.gelAllUsers)
     );
 
-    // Get ~/users/experts
+    /**
+     * @swagger
+     * /users/experts:
+     *   get:
+     *     summary: Get all verified experts
+     *     tags: [Users]
+     *     security:
+     *       - BearerAuth: []
+     *     parameters:
+     *       - in: query
+     *         name: specialty
+     *         schema:
+     *           type: string
+     *           enum: [BUSINESS, IT, MEDICAL]
+     *       - in: query
+     *         name: yearsOfExperience
+     *         schema:
+     *           type: integer
+     *       - in: query
+     *         name: rateing
+     *         schema:
+     *           type: number
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: integer
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Experts fetched successfully
+     */
     this.router.get(
       "/experts",
       validate(getAllExpertSchema),
@@ -50,7 +121,19 @@ class UserRouter {
       expressAsyncHandler(this.userController.gelAllExperts)
     );
 
-    // Get ~/users/verify/experts
+    /**
+     * @swagger
+     * /users/not-verify/experts:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get all not verified experts (Admin only)
+     *     security:
+     *       - BearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Not verified experts fetched successfully
+     */
     this.router.get(
       "/not-verify/experts",
       auth,
@@ -58,27 +141,67 @@ class UserRouter {
       expressAsyncHandler(this.userController.getAllExpertsIsNotverified)
     );
 
-    // Get ~/users/me
+    /**
+     * @swagger
+     * /users/me:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get current authenticated user profile
+     *     security:
+     *       - BearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Profile returned successfully
+     */
     this.router.get(
       "/me",
       auth,
       expressAsyncHandler(this.userController.getMe)
     );
 
-    // Get ~/users/userId
+    /**
+     * @swagger
+     * /users/{userId}:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get user by ID
+     *     security:
+     *       - BearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: User fetched successfully
+     */
     this.router.get(
       "/:userId",
       auth,
       expressAsyncHandler(this.userController.getOne)
     );
 
-    // Get ~/users/topTenExperts
-    this.router.get(
-      "/topTenExperts",
-      expressAsyncHandler(this.userController.getTopTenExperts)
-    );
-
-    // Patch ~/users/accept/userId
+    /**
+     * @swagger
+     * /users/accept/{userId}:
+     *   patch:
+     *     tags:
+     *       - Users
+     *     summary: Accept expert request (Admin only)
+     *     security:
+     *       - BearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *     responses:
+     *       200:
+     *         description: Expert request accepted
+     */
     this.router.patch(
       "/accept/:userId",
       auth,
@@ -86,7 +209,23 @@ class UserRouter {
       expressAsyncHandler(this.userController.acceptRequest)
     );
 
-    // Delete ~/users/reject/userId
+    /**
+     * @swagger
+     * /users/reject/{userId}:
+     *   delete:
+     *     tags:
+     *       - Users
+     *     summary: Reject expert request (Admin only)
+     *     security:
+     *       - BearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *     responses:
+     *       200:
+     *         description: Expert request rejected
+     */
     this.router.delete(
       "/reject/:userId",
       auth,
@@ -94,38 +233,168 @@ class UserRouter {
       expressAsyncHandler(this.userController.rejectRequest)
     );
 
-    // Patch ~/users
+    /**
+     * @swagger
+     * /users/me:
+     *   patch:
+     *     tags:
+     *       - Users
+     *     summary: Update user profile
+     *     security:
+     *       - BearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             example:
+     *               username: "NewName"
+     *     responses:
+     *       200:
+     *         description: User updated successfully
+     */
     this.router.patch(
-      "/",
+      "/me",
       validate(updateUserSchema),
       auth,
       isAccount,
       expressAsyncHandler(this.userController.update)
     );
 
-    // Delete ~/users
+    /**
+     * @swagger
+     * /users/me:
+     *   patch:
+     *     summary: Update user profile
+     *     tags: [Users]
+     *     security:
+     *       - BearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               username:
+     *                 type: string
+     *               phone:
+     *                 type: string
+     *               gender:
+     *                 type: string
+     *                 enum: [MALE, FEMALE, OTHER]
+     *               specialty:
+     *                 type: string
+     *                 enum: [BUSINESS, IT, MEDICAL]
+     *               yearsOfExperience:
+     *                 type: number
+     *               aboutYou:
+     *                 type: string
+     *               bio:
+     *                 type: string
+     *               rateing:
+     *                 type: number
+     *     responses:
+     *       200:
+     *         description: User updated successfully
+     */
     this.router.delete(
-      "/",
+      "/me",
       auth,
       isAccount,
       expressAsyncHandler(this.userController.delete)
     );
 
-    // Post ~/users/upload-cv
+    /**
+     * @swagger
+     * /users/upload-cv:
+     *   post:
+     *     summary: Upload user CV
+     *     tags: [Users]
+     *     security:
+     *       - BearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         multipart/form-data:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               cv:
+     *                 type: string
+     *                 format: binary
+     *     responses:
+     *       200:
+     *         description: CV uploaded successfully
+     */
     this.router.post(
       "/upload-cv",
       auth,
       uploadFile.single("cv"),
       expressAsyncHandler(this.userController.updateCv)
     );
-    //Get ~/users/expert/search?page=1&limit=20&username=abc
+
+    /**
+     * @swagger
+     * /users/expert/search:
+     *   get:
+     *     summary: Search for experts
+     *     tags: [Users]
+     *     parameters:
+     *       - in: query
+     *         name: specialty
+     *         schema:
+     *           type: string
+     *           enum: [BUSINESS, IT, MEDICAL]
+     *       - in: query
+     *         name: username
+     *         schema:
+     *           type: string
+     *       - in: query
+     *         name: email
+     *         schema:
+     *           type: string
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: integer
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Experts list returned
+     */
     this.router.get(
       "/expert/search",
       validate(getAllExpertSchema),
       expressAsyncHandler(this.userController.getOneExpert)
     );
 
-    // Post ~/users/upload-avatar
+    /**
+     * @swagger
+     * /users/upload-avatar:
+     *   post:
+     *     summary: Upload user avatar
+     *     tags: [Users]
+     *     security:
+     *       - BearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         multipart/form-data:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               avatar:
+     *                 type: string
+     *                 format: binary
+     *     responses:
+     *       200:
+     *         description: Avatar uploaded successfully
+     */
     this.router.post(
       "/upload-avatar",
       auth,
@@ -133,7 +402,18 @@ class UserRouter {
       expressAsyncHandler(this.userController.uploadAndUpdateAvatar)
     );
 
-    // Delete ~/users/delete-avatar
+    /**
+     * @swagger
+     * /users/delete-avatar:
+     *   delete:
+     *     summary: Delete user avatar
+     *     tags: [Users]
+     *     security:
+     *       - BearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Avatar deleted successfully
+     */
     this.router.delete(
       "/delete-avatar",
       auth,
