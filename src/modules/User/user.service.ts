@@ -111,7 +111,7 @@ class UserService {
 
     return experts;
   };
-    /**
+  /**
    * Get verified experts with optional filters and pagination
    *
    * Retrieves a paginated list of verified experts filtered by specialty, username, and email.
@@ -126,50 +126,50 @@ class UserService {
    *  page = 1, limit = 10, specialty = "IT", username = "rashad"
    *  → returns up to 10 verified IT experts whose username matches "rashad"
    */
-public getExpert = async (dto: GetOneExpertDto): Promise<Array<IUser>> => {
-  const { page, limit, specialty, username, email } = dto;
-  const { limitNumber, skip } = getPagination(page, limit);
+  public getExpert = async (dto: GetOneExpertDto): Promise<Array<IUser>> => {
+    const { page, limit, specialty, username, email } = dto;
+    const { limitNumber, skip } = getPagination(page, limit);
 
-  const experts = await User.aggregate([
-    {
-      $match: {
-        isVerified: true,
-        role: UserRoles.EXPERT,
+    const experts = await User.aggregate([
+      {
+        $match: {
+          isVerified: true,
+          role: UserRoles.EXPERT,
+        },
       },
-    },
-    {
-      $lookup: {
-        from: "expertprofiles",
-        localField: "hasExpertProfile",
-        foreignField: "_id",
-        as: "expertProfile",
+      {
+        $lookup: {
+          from: "expertprofiles",
+          localField: "hasExpertProfile",
+          foreignField: "_id",
+          as: "expertProfile",
+        },
       },
-    },
-    { $unwind: "$expertProfile" },
-    {
-      $match: {
-        ...(specialty && { "expertProfile.specialty": specialty }),
-        ...(username && { username: { $regex: username, $options: "i" } }), 
-        ...(email && { email: { $regex: email, $options: "i" } }),
+      { $unwind: "$expertProfile" },
+      {
+        $match: {
+          ...(specialty && { "expertProfile.specialty": specialty }),
+          ...(username && { username: { $regex: username, $options: "i" } }),
+          ...(email && { email: { $regex: email, $options: "i" } }),
+        },
       },
-    },
-    {
-      $project: {
-        username: 1,
-        avatar: 1,
-        email: 1,
-        "expertProfile.specialty": 1,
-        "expertProfile.rateing": 1,
-        "expertProfile.yearsOfExperience": 1,
-        "expertProfile.bio": 1,
+      {
+        $project: {
+          username: 1,
+          avatar: 1,
+          email: 1,
+          "expertProfile.specialty": 1,
+          "expertProfile.rateing": 1,
+          "expertProfile.yearsOfExperience": 1,
+          "expertProfile.bio": 1,
+        },
       },
-    },
-    { $skip: skip },
-    { $limit: limitNumber },
-  ]);
+      { $skip: skip },
+      { $limit: limitNumber },
+    ]);
 
-  return experts;
-};
+    return experts;
+  };
 
   /**
    * Retrieves all expert users who are not verified.
