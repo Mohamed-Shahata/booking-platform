@@ -9,6 +9,7 @@ import ReviewRouter from "./modules/Review/review.route";
 import SessionRouter from "./modules/Session/session.route";
 import PaymentRouter from "./modules/Payment/payment.route";
 import ChatRouter from "./modules/Chat/chat.route";
+import { setupSwagger } from "./config/swagger.config";
 
 const app = e();
 
@@ -43,5 +44,8 @@ app.use("/api/v1/chats", chatRoutes.router);
 
 // Error Handler
 app.use(errorHandler);
+
+// Swagger UI
+setupSwagger(app);
 
 export default app;

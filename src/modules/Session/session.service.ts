@@ -1,6 +1,5 @@
 import { Types } from "mongoose";
 import Session from "../../DB/model/session.model";
-import { generateRoomId } from "../../shared/utils/generateRoomID";
 import { CreateSessionDto } from "./dto/create.dto";
 import { MarkPaidDto } from "./dto/markPaid.dto";
 import { ISession } from "./session,type";

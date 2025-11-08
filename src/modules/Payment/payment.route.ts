@@ -14,7 +14,56 @@ class PaymentRouter {
     this.initRoutes();
   }
 
+  /**
+   * @swagger
+   * tags:
+   *   name: Payment
+   *   description: Endpoints for handling payments and Paymob webhook callbacks
+   */
   private initRoutes() {
+    /**
+     * @swagger
+     * /payment/pay/{sessionId}:
+     *   post:
+     *     summary: Create a payment for a specific chat session
+     *     tags: [Payment]
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: sessionId
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The ID of the chat session to pay for (MongoDB ObjectId)
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               clientEmail:
+     *                 type: string
+     *                 format: email
+     *                 description: Email of the client making the payment
+     *                 example: "client@example.com"
+     *     responses:
+     *       201:
+     *         description: Payment link created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 paymentToken:
+     *                   type: string
+     *                   example: "IOSJFIOPSDFOPKFPOIWEG5EF547G5ERHWEG..."
+     *       400:
+     *         description: Validation error or bad request
+     *       401:
+     *         description: Unauthorized
+     */
     this.router.post(
       "/pay/:sessionId",
       auth,
