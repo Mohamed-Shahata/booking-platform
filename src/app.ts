@@ -49,6 +49,7 @@ app.use(errorHandler);
 
 // Swagger UI
 setupSwagger(app);
+
 // Invalid route handler (404)
 app.all(/.*/, (req, res) => {
   sendResponse(res, StatusCode.NOT_FOUND, {
