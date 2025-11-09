@@ -10,6 +10,8 @@ import SessionRouter from "./modules/Session/session.route";
 import PaymentRouter from "./modules/Payment/payment.route";
 import ChatRouter from "./modules/Chat/chat.route";
 import { setupSwagger } from "./config/swagger.config";
+import sendResponse from "./shared/utils/sendResponse";
+import { StatusCode } from "./shared/enums/statusCode.enum";
 
 const app = e();
 
@@ -49,7 +51,7 @@ app.use(errorHandler);
 setupSwagger(app);
 // Invalid route handler (404)
 app.all(/.*/, (req, res) => {
-  res.status(404).json({
+  sendResponse(res, StatusCode.NOT_FOUND, {
     success: false,
     message: `Can't find ${req.originalUrl} on this server 🚫`,
   });
