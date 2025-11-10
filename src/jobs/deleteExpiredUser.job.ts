@@ -7,8 +7,7 @@ export function deletetionExpiredUser() {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const usersToDelete = await User.find({
-      isDeleted: true,
-      deletedAt: { $lte: sevenDaysAgo },
+      isDeleted: { $lte: sevenDaysAgo },
     });
 
     if (usersToDelete.length === 0) return;

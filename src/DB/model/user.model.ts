@@ -42,7 +42,6 @@ const userSchema = new Schema<IUser>(
       required: true,
       unique: true,
     },
-
     password: {
       type: String,
       required: function (this: IUser) {
@@ -85,11 +84,17 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(providerTypes),
       default: providerTypes.system,
     },
-    isDeleted: Date,
+    isDeleted: {
+      type: Date,
+      default: null,
+    },
     chanageCridentialsTime: {
       type: Date,
     },
-    otpSentAt: Date,
+    otpSentAt: {
+      type: Date,
+      default: null,
+    },
     hasExpertProfile: {
       type: Schema.Types.ObjectId,
       ref: "ExpertProfile",

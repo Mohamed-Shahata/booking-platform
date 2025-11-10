@@ -91,11 +91,17 @@ const userSchema = new mongoose_1.Schema({
         enum: Object.values(exports.providerTypes),
         default: exports.providerTypes.system,
     },
-    isDeleted: Date,
+    isDeleted: {
+        type: Date,
+        default: null,
+    },
     chanageCridentialsTime: {
         type: Date,
     },
-    otpSentAt: Date,
+    otpSentAt: {
+        type: Date,
+        default: null,
+    },
     hasExpertProfile: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "ExpertProfile",

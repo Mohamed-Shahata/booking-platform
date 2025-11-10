@@ -15,6 +15,8 @@ const session_route_1 = __importDefault(require("./modules/Session/session.route
 const payment_route_1 = __importDefault(require("./modules/Payment/payment.route"));
 const chat_route_1 = __importDefault(require("./modules/Chat/chat.route"));
 const swagger_config_1 = require("./config/swagger.config");
+const sendResponse_1 = __importDefault(require("./shared/utils/sendResponse"));
+const statusCode_enum_1 = require("./shared/enums/statusCode.enum");
 const app = (0, express_1.default)();
 // CORS Configuration
 app.use((0, cors_1.default)(corsOptions_config_1.corsOptions));
@@ -44,7 +46,7 @@ app.use(errorHandler_middleware_1.default);
 (0, swagger_config_1.setupSwagger)(app);
 // Invalid route handler (404)
 app.all(/.*/, (req, res) => {
-    res.status(404).json({
+    (0, sendResponse_1.default)(res, statusCode_enum_1.StatusCode.NOT_FOUND, {
         success: false,
         message: `Can't find ${req.originalUrl} on this server 🚫`,
     });

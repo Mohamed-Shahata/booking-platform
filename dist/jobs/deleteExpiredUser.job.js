@@ -20,8 +20,7 @@ function deletetionExpiredUser() {
     node_cron_1.default.schedule("0 0 * * *", () => __awaiter(this, void 0, void 0, function* () {
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const usersToDelete = yield user_model_1.default.find({
-            isDeleted: true,
-            deletedAt: { $lte: sevenDaysAgo },
+            isDeleted: { $lte: sevenDaysAgo },
         });
         if (usersToDelete.length === 0)
             return;
