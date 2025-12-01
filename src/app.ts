@@ -51,7 +51,7 @@ app.use(errorHandler);
 setupSwagger(app);
 
 // Invalid route handler (404)
-app.all(/.*/, (req, res) => {
+app.all(/.*/, (req: Request, res: Response) => {
   sendResponse(res, StatusCode.NOT_FOUND, {
     success: false,
     message: `Can't find ${req.originalUrl} on this server 🚫`,

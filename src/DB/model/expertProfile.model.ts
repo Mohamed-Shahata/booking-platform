@@ -59,6 +59,14 @@ const expertProfileSchema = new Schema<IExpertProfile>(
       type: Number,
       default: 0,
     },
+    location: {
+      type: String,
+      default: null,
+    },
+    nameWorked: {
+      type: String,
+      default: null,
+    },
     reviews: [
       {
         type: Schema.Types.ObjectId,

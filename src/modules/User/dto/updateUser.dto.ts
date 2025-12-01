@@ -2,6 +2,7 @@ import z from "zod";
 import { Types } from "mongoose";
 import { UserGender } from "../user.enum";
 import { ExpertSpecialty } from "../../../shared/enums/expertProfile.enum";
+import { UserRoles } from "../../../shared/enums/UserRoles.enum";
 
 /**
  * Unified schema for updating both User and ExpertProfile
@@ -25,12 +26,6 @@ export const updateUserSchema = z.object({
       .optional(),
 
     // ---------- EXPERT FIELDS ----------
-    userId: z
-      .string()
-      .refine((val) => Types.ObjectId.isValid(val), {
-        message: "Invalid userId",
-      })
-      .optional(),
 
     specialty: z.enum(ExpertSpecialty).optional(),
 
@@ -40,7 +35,11 @@ export const updateUserSchema = z.object({
 
     bio: z.string().optional(),
 
-    rateing: z.number().optional(),
+    location: z.string().min(3).max(70).optional(),
+
+    nameWorked: z.string().min(3).max(50).optional(),
+
+    role: z.enum([UserRoles.CLIENT, UserRoles.EXPERT]),
   }),
 });
 

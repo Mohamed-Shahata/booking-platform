@@ -194,30 +194,58 @@ class UserService {
    *
    * @param id - The user's MongoDB ObjectId
    * @param bodyDto - The data to update
+   * @param role - The role of person
    * @returns The updated user document
    */
   public update = async (
     id: Types.ObjectId,
-    bodyDto: UpdateUserDto
+    bodyDto: UpdateUserDto,
+    role: UserRoles
   ): Promise<IUser> => {
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { $set: bodyDto },
-      { new: true }
-    );
-
-    if (!updatedUser)
-      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
-
-    if (updatedUser.role === UserRoles.EXPERT) {
-      await ExpertProfile.findOneAndUpdate(
-        { userId: id },
-        { $set: bodyDto },
+    const {
+      username,
+      aboutYou,
+      bio,
+      gender,
+      phone,
+      specialty,
+      yearsOfExperience,
+      location,
+      nameWorked,
+    } = bodyDto;
+    let userUpdate: IUser | null;
+    if (role === UserRoles.CLIENT) {
+      userUpdate = await User.findByIdAndUpdate(
+        id,
+        { $set: { username, gender, phone } },
         { new: true }
       );
+    } else if (role === UserRoles.EXPERT) {
+      userUpdate = await ExpertProfile.findOneAndUpdate(
+        { userId: id },
+        {
+          $set: {
+            username,
+            aboutYou,
+            bio,
+            gender,
+            phone,
+            specialty,
+            yearsOfExperience,
+            location,
+            nameWorked,
+          },
+        },
+        { new: true }
+      );
+    } else {
+      throw new AppError("Role not found", StatusCode.NOT_FOUND);
     }
 
-    return updatedUser;
+    if (!userUpdate)
+      throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
+
+    return userUpdate;
   };
 
   /**

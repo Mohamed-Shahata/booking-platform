@@ -39,16 +39,16 @@ class UserController {
       message: UserSuccess.GET_ALL_EXPERT_DONE,
     });
   };
-   // GET ~/users/expert/search?page=1&limit=20
+  // GET ~/users/expert/search?page=1&limit=20
   public getOneExpert = async (req: Request, res: Response) => {
-    const dto = req.query; 
+    const dto = req.query;
     const expert = await this.userService.getExpert(dto);
     sendResponse(res, StatusCode.OK, {
       data: { expert },
       success: true,
       message: "Done",
     });
-  }
+  };
 
   // GET ~/users/verify/expert
   public getAllExpertsIsNotverified = async (req: Request, res: Response) => {
@@ -70,8 +70,9 @@ class UserController {
   public update = async (req: CustomRequest, res: Response) => {
     const userId = new Types.ObjectId(req.user?.id);
     const dto = req.body;
+    const role = req.body.role;
 
-    const user = await this.userService.update(userId, dto);
+    const user = await this.userService.update(userId, dto, role);
 
     sendResponse(res, StatusCode.OK, {
       data: user,

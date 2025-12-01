@@ -44,5 +44,7 @@ export interface IExpertProfile extends Document {
   totalStars: number;
   wallet: number;
   numReviews: number;
+  location: string | null;
+  nameWorked: string | null;
   reviews: Types.ObjectId[] | IReview[];
 }
