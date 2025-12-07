@@ -100,7 +100,8 @@ class AuthService {
       password,
       phone,
       role: UserRoles.EXPERT,
-      verificationCode: otp,
+      // verificationCode: otp, // note delete comment here after test frontend work
+      isVerified: true, // note delete this line after test front end work
       verificationCodeExpires: this.generateExpiryTime(5),
     });
 
