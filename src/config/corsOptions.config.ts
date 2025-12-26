@@ -1,7 +1,10 @@
 import { StatusCode } from "../shared/enums/statusCode.enum";
 import AppError from "../shared/errors/app.error";
 
-const allowedOrigins = ["https://consultations-phi.vercel.app","http://localhost:5173"];
+const allowedOrigins = [
+  "https://consultations-gules.vercel.app",
+  "http://localhost:5173",
+];
 
 export const corsOptions = {
   origin: function (origin: any, callback: any) {
