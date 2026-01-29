@@ -56,7 +56,7 @@ class AuthService {
     });
 
     // send otp to user email
-    mailService.sendVreficationEmail(email, username, otp);
+    // mailService.sendVreficationEmail(email, username, otp);
 
     return {
       code: otp,
@@ -130,7 +130,7 @@ class AuthService {
     await user.save();
 
     // send otp to user email
-    mailService.sendVreficationEmail(email, username, otp);
+    // mailService.sendVreficationEmail(email, username, otp);
 
     return {
       code: otp,
