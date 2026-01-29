@@ -25,8 +25,11 @@ class AuthController {
    */
   public registerClient = async (req: Request, res: Response) => {
     const dto = req.body;
-    const { message } = await this.authService.registerClient(dto);
-    sendResponse(res, StatusCode.OK, { success: true, data: { message } });
+    const { message, code } = await this.authService.registerClient(dto);
+    sendResponse(res, StatusCode.OK, {
+      success: true,
+      data: { message, code },
+    });
   };
 
   /**
@@ -48,8 +51,14 @@ class AuthController {
     if (!cvFile)
       throw new AppError("no cv file uploaded", StatusCode.BAD_REQUEST);
 
-    const { message } = await this.authService.registerExpert(dto, cvFile);
-    sendResponse(res, StatusCode.OK, { success: true, data: { message } });
+    const { message, code } = await this.authService.registerExpert(
+      dto,
+      cvFile,
+    );
+    sendResponse(res, StatusCode.OK, {
+      success: true,
+      data: { message, code },
+    });
   };
 
   /**
