@@ -34,7 +34,7 @@ class AuthService {
    */
   public registerClient = async (
     dto: RegisterClientDto,
-  ): Promise<{ message: string }> => {
+  ): Promise<{ message: string; code: string }> => {
     const { email, username, gender, password, phone } = dto;
 
     const userExsits = await User.findOne({ email });
@@ -59,6 +59,7 @@ class AuthService {
     mailService.sendVreficationEmail(email, username, otp);
 
     return {
+      code: otp,
       message: "We sent a new otp of your email, check your email please",
     };
   };
@@ -73,7 +74,7 @@ class AuthService {
   public registerExpert = async (
     dto: RegisterExpertDto,
     cvFile: Express.Multer.File,
-  ): Promise<{ message: string }> => {
+  ): Promise<{ message: string; code: string }> => {
     const {
       email,
       username,
@@ -132,6 +133,7 @@ class AuthService {
     mailService.sendVreficationEmail(email, username, otp);
 
     return {
+      code: otp,
       message: "We sent a new otp of your email, check your email please",
     };
   };
