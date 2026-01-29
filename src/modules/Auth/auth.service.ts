@@ -33,7 +33,7 @@ class AuthService {
    * @returns A success message indicating that an OTP has been sent
    */
   public registerClient = async (
-    dto: RegisterClientDto
+    dto: RegisterClientDto,
   ): Promise<{ message: string }> => {
     const { email, username, gender, password, phone } = dto;
 
@@ -72,7 +72,7 @@ class AuthService {
    */
   public registerExpert = async (
     dto: RegisterExpertDto,
-    cvFile: Express.Multer.File
+    cvFile: Express.Multer.File,
   ): Promise<{ message: string }> => {
     const {
       email,
@@ -100,7 +100,7 @@ class AuthService {
       password,
       phone,
       role: UserRoles.EXPERT,
-      // verificationCode: otp, // note delete comment here after test frontend work
+      verificationCode: otp, // note delete comment here after test frontend work
       isVerified: true, // note delete this line after test front end work
       verificationCodeExpires: this.generateExpiryTime(5),
     });
@@ -110,7 +110,7 @@ class AuthService {
       cvFile.buffer,
       process.env.NODE_ENV === Environment.PRODUCTION
         ? CloudinaryFolders.CVS
-        : CloudinaryFolders.CVS_DEVELOPMENT
+        : CloudinaryFolders.CVS_DEVELOPMENT,
     );
 
     // create a expert profile
@@ -143,7 +143,7 @@ class AuthService {
    * @returns A success message upon successful verification
    */
   public verifyEmail = async (
-    dto: VerifyEmailDto
+    dto: VerifyEmailDto,
   ): Promise<{ message: string }> => {
     const { email, code } = dto;
 
@@ -152,7 +152,7 @@ class AuthService {
     if (user.isVerified && user.verificationCode === null)
       throw new AppError(
         UserError.USER_ACCOUNT_IS_VERIFIED,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
 
     if (
@@ -201,7 +201,7 @@ class AuthService {
    *                    or the provider type doesn't match
    */
   public loginWithGoogle = async (
-    idToken: string
+    idToken: string,
   ): Promise<{ user: IUser; accessToken: string }> => {
     // Verify token from Google
     const ticket = await this.client.verifyIdToken({
@@ -238,7 +238,7 @@ class AuthService {
     if (user.provider !== providerTypes.google) {
       throw new AppError(
         "Invalid provider for this email",
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
     }
 
@@ -257,19 +257,19 @@ class AuthService {
    * @returns Authenticated user and generated access token
    */
   public login = async (
-    dto: LoginDto
+    dto: LoginDto,
   ): Promise<{ user: IUser; accessToken: string }> => {
     const { email, password } = dto;
     const user = await this.findUserByEmail(
       email,
       ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
-      true
+      true,
     );
 
     if (!user.isVerified)
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
 
     // check account is deleted or no
@@ -285,7 +285,7 @@ class AuthService {
     if (!isMatch)
       throw new AppError(
         ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
 
     // generate a new access token
@@ -302,18 +302,18 @@ class AuthService {
    */
 
   public forgetPassword = async (
-    dto: forgetPasswordDto
+    dto: forgetPasswordDto,
   ): Promise<{ message: string }> => {
     const { email } = dto;
     const user = await this.findUserByEmail(
       email,
       ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
-      true
+      true,
     );
     if (!user.isVerified)
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
     // generate a new OTP
     const otp = this.generateOtp();
@@ -333,18 +333,18 @@ class AuthService {
    * @returns A success message upon password was changed
    */
   public restPassword = async (
-    dto: restPasswordDto
+    dto: restPasswordDto,
   ): Promise<{ message: string }> => {
     const { email, code, password } = dto;
     const user = await this.findUserByEmail(
       email,
       ValidationError.EMAIL_OR_PASSWORD_IS_WRONG,
-      true
+      true,
     );
     if (!user.isVerified)
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
     if (
       user.verificationCodeExpires &&
@@ -385,14 +385,14 @@ class AuthService {
    * @throws {AppError} If the user is not verified or the email does not exist.
    */
   public resendCode = async (
-    dto: resendCodeDto
+    dto: resendCodeDto,
   ): Promise<{ message: string }> => {
     const { email } = dto;
     // 1. Find the user by email
     const user = await this.findUserByEmail(
       email,
       UserError.USER_NOT_FOUND,
-      true
+      true,
     );
 
     const now = Date.now();
@@ -406,7 +406,7 @@ class AuthService {
         const remaining = Math.ceil((FIVE_MINUTES - diff) / 1000 / 60);
         throw new AppError(
           `Please wait ${remaining} minute(s) before requesting another code.`,
-          StatusCode.BAD_REQUEST
+          StatusCode.BAD_REQUEST,
         );
       }
     }
@@ -441,17 +441,17 @@ class AuthService {
   private findUserByEmail = async (
     email: string,
     messageValidation?: string,
-    selectPassword: boolean = false
+    selectPassword: boolean = false,
   ): Promise<IUser> => {
     const selectPass = "+password";
     const notSelectPass = "-password";
     const user = await User.findOne({ email }).select(
-      selectPassword ? selectPass : notSelectPass
+      selectPassword ? selectPass : notSelectPass,
     );
     if (!user)
       throw new AppError(
         messageValidation || UserError.USER_NOT_FOUND,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
     return user;
   };
