@@ -39,7 +39,7 @@ class UserService {
     const { limitNumber, skip } = getPagination(page, limit);
 
     const users = await User.find({ isVerified: true })
-      .select("username email avatar gender phone")
+      .select("username email avatar gender phone role isVerified")
       .limit(limitNumber)
       .skip(skip)
       .exec();
@@ -200,7 +200,7 @@ class UserService {
   public update = async (
     id: Types.ObjectId,
     bodyDto: UpdateUserDto,
-    role: UserRoles
+    role: UserRoles,
   ): Promise<IUser> => {
     const {
       username,
@@ -218,7 +218,7 @@ class UserService {
       userUpdate = await User.findByIdAndUpdate(
         id,
         { $set: { username, gender, phone } },
-        { new: true }
+        { new: true },
       );
     } else if (role === UserRoles.EXPERT) {
       userUpdate = await ExpertProfile.findOneAndUpdate(
@@ -236,7 +236,7 @@ class UserService {
             nameWorked,
           },
         },
-        { new: true }
+        { new: true },
       );
     } else {
       throw new AppError("Role not found", StatusCode.NOT_FOUND);
@@ -264,7 +264,7 @@ class UserService {
       {
         $set: { isDeleted: Date.now() },
       },
-      { new: true }
+      { new: true },
     );
     if (!user)
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
@@ -323,12 +323,12 @@ class UserService {
    * @returns A success message if the user was updated
    */
   public acceptRequest = async (
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ): Promise<{ message: string }> => {
     const user = await User.findOneAndUpdate(
       { _id: userId },
       { $set: { isVerified: true } },
-      { new: true }
+      { new: true },
     );
     if (!user) {
       throw new AppError(UserError.USER_NOT_FOUND, StatusCode.NOT_FOUND);
@@ -337,7 +337,7 @@ class UserService {
     if (user.verificationCode) {
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED_CODE,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
     }
 
@@ -355,7 +355,7 @@ class UserService {
    * @returns A success message after rejection and cleanup
    */
   public rejectRequest = async (
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ): Promise<{ message: string }> => {
     const user = await User.findById(userId);
     if (!user) {
@@ -365,7 +365,7 @@ class UserService {
     if (user.verificationCode) {
       throw new AppError(
         UserError.USER_ACCOUNT_IS_NOT_VERIFIED_CODE,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
     }
 
@@ -392,14 +392,14 @@ class UserService {
    */
   public updatedCv = async (
     userId: Types.ObjectId,
-    file: Express.Multer.File
+    file: Express.Multer.File,
   ): Promise<{ message: string }> => {
     const userExpertProfile = await this.getOneExpertProfile(userId);
 
     await CloudinaryService.deleteImageOrFile(userExpertProfile.cv.publicId);
     const uploadResult = await CloudinaryService.uploadStreamFile(
       file.buffer,
-      CloudinaryFolders.CVS
+      CloudinaryFolders.CVS,
     );
     await ExpertProfile.updateOne(
       { _id: userId },
@@ -408,7 +408,7 @@ class UserService {
           url: uploadResult.url,
           publicId: uploadResult.publicId,
         },
-      }
+      },
     );
 
     return { message: UserSuccess.UPDATED_USER_EXPERT_PROFILE_SUCCESSFULLY };
@@ -424,14 +424,14 @@ class UserService {
    */
   public uploadAndUpdateAvatar = async (
     userId: Types.ObjectId,
-    file: string
+    file: string,
   ): Promise<{ message: string }> => {
     const user = await this.getOneUser(userId);
 
     if (!user.avatar?.publicId) {
       const uploadResult = await CloudinaryService.uploadImage(
         file,
-        CloudinaryFolders.AVATARS
+        CloudinaryFolders.AVATARS,
       );
       await User.updateOne(
         { _id: userId },
@@ -440,13 +440,13 @@ class UserService {
             url: uploadResult.url,
             publicId: uploadResult.publicId,
           },
-        }
+        },
       );
     } else {
       await CloudinaryService.deleteImageOrFile(user.avatar?.publicId!);
       const uploadResult = await CloudinaryService.uploadImage(
         file,
-        CloudinaryFolders.AVATARS
+        CloudinaryFolders.AVATARS,
       );
       await User.updateOne(
         { _id: userId },
@@ -455,7 +455,7 @@ class UserService {
             url: uploadResult.url,
             publicId: uploadResult.publicId,
           },
-        }
+        },
       );
     }
 
@@ -469,7 +469,7 @@ class UserService {
    * @returns A success message
    */
   public deleteAvatar = async (
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ): Promise<{ message: string }> => {
     const user = await this.getOneUser(userId);
 
@@ -482,7 +482,7 @@ class UserService {
           url: DEFAULT_AVATAR.url,
           publicId: DEFAULT_AVATAR.publicId,
         },
-      }
+      },
     );
 
     return { message: UserSuccess.DELETED_AVATAR_SUCCESSFULLY };
@@ -511,7 +511,7 @@ class UserService {
    * @throws {AppError} If no profile is found.
    */
   private getOneExpertProfile = async (
-    id: Types.ObjectId
+    id: Types.ObjectId,
   ): Promise<IExpertProfile> => {
     const expertProfile = await ExpertProfile.findOne({ userId: id });
     if (!expertProfile)
