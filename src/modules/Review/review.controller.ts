@@ -34,7 +34,7 @@ class ReviewController {
   public getReviewsOneExpert = async (req: Request, res: Response) => {
     const dto = req.query;
     const expertId = new Types.ObjectId(req.params.expertId);
-    if (Types.ObjectId.isValid(expertId))
+    if (!Types.ObjectId.isValid(expertId))
       throw new AppError("Invalid expertId", StatusCode.BAD_REQUEST);
 
     const user = await this.reviewService.getReviewsOneExpert(expertId, dto);
