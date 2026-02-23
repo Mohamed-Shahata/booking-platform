@@ -5,6 +5,6 @@ export interface IReview {
   userId: Types.ObjectId;
   expertId: Types.ObjectId;
   provider: string;
-  text: string;
-  stars: number;
+  message: string;
+  rating: number;
 }

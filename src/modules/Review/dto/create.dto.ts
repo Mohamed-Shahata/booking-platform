@@ -8,8 +8,8 @@ export const createReviewSchema = z.object({
       message: "Invalid userId",
     }),
     provider: z.enum(ReviewProvider).default(ReviewProvider.SYSTEM),
-    text: z.string().min(10).max(300),
-    stars: z.number().min(1).max(5),
+    message: z.string().min(10).max(300),
+    rating: z.number().min(1).max(5),
   }),
 });
 

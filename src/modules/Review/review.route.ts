@@ -158,9 +158,9 @@ class ReviewRouter {
      *                 description: Source of the review (system or manual)
      *                 enum: [SYSTEM, CLIENT]
      *                 default: SYSTEM
-     *               text:
+     *               Message:
      *                 type: string
-     *                 description: Review text
+     *                 description: Review Message
      *                 minLength: 10
      *                 maxLength: 300
      *                 example: "Very professional and helpful expert!"
@@ -248,4 +248,4 @@ class ReviewRouter {
   }
 }
 
-export default ReviewRouter;
+export default ReviewRouter;  

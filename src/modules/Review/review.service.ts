@@ -87,12 +87,12 @@ class ReviewService {
     userId: Types.ObjectId,
     dto: CreateReviewDto
   ): Promise<{ message: string }> => {
-    const { expertId, text, stars, provider } = dto;
+    const { expertId, message, rating, provider } = dto;
 
     const newReview = await Review.create({
       userId,
-      text,
-      stars,
+      message,
+      rating,
       provider,
       expertId,
     });
@@ -103,7 +103,7 @@ class ReviewService {
           numReviews: { $add: ["$numReviews", 1] },
           rateing: {
             $divide: [
-              { $add: [{ $multiply: ["$rateing", "$numReviews"] }, stars] },
+              { $add: [{ $multiply: ["$rateing", "$numReviews"] }, rating] },
               { $add: ["$numReviews", 1] },
             ],
           },

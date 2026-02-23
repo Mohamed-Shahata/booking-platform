@@ -19,13 +19,13 @@ const reviewSchema = new Schema<IReview>(
       enum: ReviewProvider,
       default: ReviewProvider.SYSTEM,
     },
-    text: {
+    message: {
       type: String,
       minLength: 10,
       max: 300,
       required: true,
     },
-    stars: {
+    rating: {
       type: Number,
       min: 1,
       max: 5,
