@@ -179,7 +179,7 @@ class ReviewRouter {
      *         description: Unauthorized
      */
     this.router.post(
-      "/create",
+      "/create/:userId",
       validate(createReviewSchema),
       auth,
       authRoles(UserRoles.ADMIN, UserRoles.CLIENT),
